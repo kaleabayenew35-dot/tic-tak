@@ -20,6 +20,7 @@ export const appState = {
   matchViewOpen: false,
   betAmount: 0,
   selectedPlayer: null,
+  aiEnabled: false,
 }
 
 export const gameState = {

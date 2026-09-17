@@ -17,6 +17,10 @@ export function fetchStatus() {
   return fetchJson(`${API_URL}/api/status`, { cache: 'no-store' })
 }
 
+export function fetchAiConfig() {
+  return fetchJson(`${API_URL}/api/ai/config`, { cache: 'no-store' })
+}
+
 export function registerOnline(payload) {
   return fetchJson(`${API_URL}/api/players/online`, {
     method: 'POST',

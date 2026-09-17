@@ -1,4 +1,4 @@
-import { API_URL, fetchStatus, saveSelectedBet, declineLiveChallenge } from './api.js'
+import { API_URL, fetchStatus, fetchAiConfig, saveSelectedBet, declineLiveChallenge } from './api.js'
 import { registerOnlineUser, loadPlayers, loadLiveChallenges, loadLiveMatches, loadMatchById, connectLiveStream, startLivePolling, stopLivePolling, acceptChallenge, cancelSelection, forfeitActiveMatch, createLiveChallenge } from './live.js'
 import { applyAuthData, formatUsername, getCurrentUserProfile, getCurrentUsername, getOpponentNameFromMatch } from './helpers.js'
 import { showLoadingOverlay, hideLoadingOverlay, showConnectionBanner, hideConnectionBanner, updateConnectionStatus, renderPlayers, openSidebar, closeSidebar, hideModal, showModal, showInviteModal, hideInviteModal, updateOnlineCount } from './ui.js'
@@ -100,7 +100,10 @@ function bindAppListeners() {
   sidebarToggle?.addEventListener('click', openSidebar)
   sidebarClose?.addEventListener('click', closeSidebar)
   sidebarOverlay?.addEventListener('click', closeSidebar)
-  playAiSidebar?.addEventListener('click', () => showGameScreen(true))
+  playAiSidebar?.addEventListener('click', () => {
+    if (!appState.aiEnabled) return
+    showGameScreen(true)
+  })
   backButton?.addEventListener('click', async () => {
     await forfeitActiveMatch()
     showDashboard()
@@ -226,6 +229,16 @@ async function startPlayAgain() {
 
 async function initializeApp() {
   if (window.authData) applyAuthData(window.authData)
+  try {
+    const response = await fetchAiConfig()
+    const config = response?.data ?? response
+    appState.aiEnabled = Boolean(config?.ai_enabled)
+  } catch {
+    appState.aiEnabled = false
+  }
+  if (!appState.aiEnabled) {
+    document.querySelector('.ai-card')?.remove()
+  }
   bindAppListeners()
   loadStats()
   renderSidebarStats()
