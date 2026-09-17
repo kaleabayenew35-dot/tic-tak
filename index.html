@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XO Game</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="auth-screen hidden" id="authScreen">
+    <div class="auth-card">
+      <div class="auth-badge">XO Mini App</div>
+      <h1>Access Denied</h1>
+      <p class="auth-message">You are not allowed to continue. Authentication parameters are missing or invalid.</p>
+      <p class="auth-note">This app only runs when a valid <code>token</code>, <code>username</code>, <code>phoneNumber</code>, and <code>balance</code> are provided in the URL or stored session.</p>
+    </div>
+  </div>
+
+  <div class="loading-overlay hidden" id="loadingOverlay">
+    <div class="loading-card">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <p class="loading-text" id="loadingOverlayText">Loading app…</p>
+    </div>
+  </div>
+
+  <div id="appWrapper">
+  <!-- ══════════════════════════════════════════
+       PAGE WRAPPER  (topbar + two-column layout)
+  ══════════════════════════════════════════ -->
+  <div class="page-wrapper">
+
+    <!-- ── GLOBAL TOP BAR ── -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="avatar">X</div>
+        <div class="topbar-info">
+          <span class="topbar-name">Loading…</span>
+          <span class="topbar-balance">💰 0 ETB</span>
+        </div>
+      </div>
+      <div class="topbar-center">
+        <span class="topbar-brand">XO <span class="brand-accent">Game</span></span>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" id="shareBtn" aria-label="share">🔗</button>
+        <button class="icon-btn" aria-label="notifications">🔔</button>
+        <button class="icon-btn" aria-label="help">?</button>
+      </div>
+    </header>
+
+    <!-- ── TWO-COLUMN BODY ── -->
+    <div class="layout">
+
+      <!-- ════════ MAIN COLUMN ════════ -->
+      <main class="main-col">
+
+        <!-- ─── DASHBOARD SCREEN ─── -->
+        <div class="screen" id="dashboardScreen">
+
+          <!-- Online players -->
+          <div class="section-card">
+
+            <!-- ── SECTION HEADER with selected bet display ── -->
+            <div class="section-header">
+              <span class="section-title">Online Players</span>
+              <div class="header-right-group">
+                <span class="bet-selected-tag hidden" id="betSelectedTag"></span>
+                <span class="online-dot-label"><span class="online-dot"></span><span id="onlineCount">4 online</span></span>
+              </div>
+            </div>
+
+            <!-- ── BET AMOUNT SELECTOR ── -->
+            <div class="bet-selector">
+              <div class="bet-selector-top">
+                <span class="bet-label">💰 Select Bet Amount</span>
+                <span class="bet-current unselected" id="betDisplay">Pick amount</span>
+              </div>
+              <div class="bet-chips" id="betChips">
+                <button class="bet-chip" data-amount="10">10</button>
+                <button class="bet-chip" data-amount="20">20</button>
+                <button class="bet-chip" data-amount="30">30</button>
+                <button class="bet-chip" data-amount="50">50</button>
+                <button class="bet-chip" data-amount="100">100</button>
+                <button class="bet-chip" data-amount="200">200</button>
+                <button class="bet-chip" data-amount="500">500</button>
+              </div>
+
+            </div>
+
+            <!-- Selected player banner — shown when a player is picked -->
+            <div class="selected-banner hidden" id="selectedBanner">
+              <div class="sb-left">
+                <div class="sb-avatar" id="sbAvatar"></div>
+                <div class="sb-meta">
+                  <span class="sb-username" id="sbUsername"></span>
+                  <span class="sb-status-txt" id="sbStatusTxt">Ready to play ✓</span>
+                </div>
+              </div>
+              <div class="sb-right">
+                <span class="sb-bet-tag" id="sbBetTag"></span>
+                <button class="sb-cancel-btn" id="sbCancelBtn" type="button">✕ Cancel</button>
+              </div>
+            </div>
+
+            <div class="player-list" id="playerList"></div>
+      <div class="connection-banner hidden" id="connectionBanner">
+        <span id="connectionBannerText">You are offline.</span>
+        <button class="retry-button" id="connectionRetryButton" type="button">Retry</button>
+      </div>
+
+        </div><!-- /dashboardScreen -->
+
+        <!-- ─── GAME SCREEN ─── -->
+        <div class="screen hidden" id="gameScreen">
+          <div class="game-inner">
+
+          <!-- Game top bar -->
+          <header class="game-topbar">
+            <button class="back-btn" id="backButton" type="button" aria-label="back">←</button>
+            <span class="game-topbar-title">XO Game</span>
+            <button class="icon-btn" id="resetButton" type="button" aria-label="restart">↺</button>
+          </header>
+
+          <!-- Versus bar -->
+          <div class="versus-bar">
+            <div class="vs-player active-player" id="playerX">
+              <div class="vs-avatar x-color">X</div>
+              <span class="vs-name">You</span>
+              <span class="vs-score" id="scoreX">0</span>
+            </div>
+            <div class="vs-divider">VS</div>
+            <div class="vs-player" id="playerO">
+              <div class="vs-avatar o-color">O</div>
+              <span class="vs-name" id="opponentName">Opponent</span>
+              <span class="vs-score" id="scoreO">0</span>
+            </div>
+          </div>
+
+          <!-- Turn indicator -->
+          <div class="turn-bar">
+            <div class="turn-indicator" id="turnIndicator">
+              <span class="turn-dot x-dot"></span>
+              <span id="statusText">Your turn — X</span>
+            </div>
+          </div>
+
+          <!-- Board -->
+          <div class="board" id="board">
+            <button class="cell" data-index="0" aria-label="cell 1"></button>
+            <button class="cell" data-index="1" aria-label="cell 2"></button>
+            <button class="cell" data-index="2" aria-label="cell 3"></button>
+            <button class="cell" data-index="3" aria-label="cell 4"></button>
+            <button class="cell" data-index="4" aria-label="cell 5"></button>
+            <button class="cell" data-index="5" aria-label="cell 6"></button>
+            <button class="cell" data-index="6" aria-label="cell 7"></button>
+            <button class="cell" data-index="7" aria-label="cell 8"></button>
+            <button class="cell" data-index="8" aria-label="cell 9"></button>
+          </div>
+
+          <!-- Round info -->
+          <div class="round-bar">
+            <span class="round-label">Round</span>
+            <div class="round-dots">
+              <span class="round-dot active"></span>
+              <span class="round-dot"></span>
+              <span class="round-dot"></span>
+            </div>
+          </div>
+
+          <footer class="game-footer">Built for Telegram Mini App</footer>
+
+          </div><!-- /game-inner -->
+        </div><!-- /gameScreen -->
+
+      </main><!-- /main-col -->
+
+      <!-- ════════ RIGHT SIDEBAR ════════ -->
+      <aside class="sidebar" id="sidebar">
+
+        <!-- Play with AI card -->
+        <div class="sb-card ai-card">
+          <div class="sb-card-icon">🤖</div>
+          <div class="sb-card-body">
+            <span class="sb-card-title">Play vs AI</span>
+            <span class="sb-card-sub">Smart minimax opponent</span>
+          </div>
+          <button class="btn-primary sb-ai-btn" id="playAiSidebar" type="button">Play</button>
+        </div>
+
+        <!-- Stats card -->
+        <div class="sb-card">
+          <div class="sb-section-hd">
+            <span class="sb-section-title">Your Stats</span>
+            <span class="sb-section-badge">Season 1</span>
+          </div>
+          <div class="sb-stats">
+            <div class="sb-stat win">
+              <div class="sb-stat-icon">🏆</div>
+              <div class="sb-stat-info">
+                <span class="sb-stat-num" id="sideWins">12</span>
+                <span class="sb-stat-lbl">Wins</span>
+              </div>
+              <div class="sb-stat-bar-wrap">
+                <div class="sb-stat-bar win-bar" style="width:75%"></div>
+              </div>
+            </div>
+            <div class="sb-stat draw">
+              <div class="sb-stat-icon">🤝</div>
+              <div class="sb-stat-info">
+                <span class="sb-stat-num" id="sideDraws">7</span>
+                <span class="sb-stat-lbl">Draws</span>
+              </div>
+              <div class="sb-stat-bar-wrap">
+                <div class="sb-stat-bar draw-bar" style="width:44%"></div>
+              </div>
+            </div>
+            <div class="sb-stat lose">
+              <div class="sb-stat-icon">💀</div>
+              <div class="sb-stat-info">
+                <span class="sb-stat-num" id="sideLosses">3</span>
+                <span class="sb-stat-lbl">Losses</span>
+              </div>
+              <div class="sb-stat-bar-wrap">
+                <div class="sb-stat-bar lose-bar" style="width:19%"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Win-rate ring -->
+          <div class="winrate-row">
+            <div class="winrate-ring">
+              <svg viewBox="0 0 36 36" class="ring-svg">
+                <circle class="ring-bg"    cx="18" cy="18" r="15" />
+                <circle class="ring-fill"  cx="18" cy="18" r="15"
+                  stroke-dasharray="70 100"
+                  stroke-dashoffset="25" />
+              </svg>
+              <span class="ring-pct">70%</span>
+            </div>
+            <div class="winrate-info">
+              <span class="winrate-title">Win Rate</span>
+              <span class="winrate-sub">22 total games</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar toggle handle (mobile) -->
+        <button class="sidebar-close" id="sidebarClose" aria-label="close sidebar">✕</button>
+
+      </aside><!-- /sidebar -->
+
+      <!-- Mobile sidebar toggle button -->
+      <button class="sidebar-fab" id="sidebarToggle" aria-label="open sidebar">📊</button>
+
+    </div><!-- /layout -->
+  </div><!-- /page-wrapper -->
+  </div><!-- /appWrapper -->
+
+  <!-- ══════════════════════════════════════════
+       RESULT POPUP
+  ══════════════════════════════════════════ -->
+  <div class="result-overlay hidden" id="resultOverlay">
+    <div class="result-card">
+      <!-- confetti dots -->
+      <div class="confetti-wrap" id="confettiWrap"></div>
+
+      <div class="result-emoji" id="resultEmoji">🏆</div>
+      <h2 class="result-title" id="resultMessage">You Win!</h2>
+      <p class="result-sub" id="resultSub">Outstanding move!</p>
+
+      <div class="result-bet-row" id="resultBetRow">
+        <span class="result-bet-label">Bet</span>
+        <span class="result-bet-amount" id="resultBetAmount">₿ 50</span>
+        <span class="result-bet-outcome" id="resultBetOutcome">+₿ 50</span>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn-primary" id="closeModalButton" type="button">▶ Play Again</button>
+        <button class="btn-ghost"   id="modalHomeButton"  type="button">⌂ Home</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="invite-modal-overlay hidden" id="inviteModalOverlay">
+    <div class="invite-modal-card">
+      <div class="invite-modal-icon">⚔️</div>
+      <div class="invite-modal-avatar" id="inviteModalAvatar">?</div>
+      <h3 id="inviteModalTitle">Challenge Incoming!</h3>
+      <p id="inviteModalMessage">A player wants to challenge you for</p>
+      <div class="invite-modal-bet" id="inviteModalBet">₿ 0 ETB</div>
+      <div class="invite-modal-actions">
+        <button class="btn-primary" id="inviteAcceptButton" type="button">✅ Accept</button>
+        <button class="btn-ghost"  id="inviteDeclineButton" type="button">✕ Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay hidden" id="sidebarOverlay"></div>
+
+  <script src="auth.js"></script>
+  <script src="share-modal.js" defer></script>
+  <script type="module" src="app.js" defer></script>
+</body>
+</html>
