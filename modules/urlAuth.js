@@ -312,7 +312,7 @@ export function initUrlAuth() {
         setBalanceLoading(false);
 
         // Backend returned nulls — still waking up
-        if (data.balance === null || data.username === null) {
+        if (data.username === null) {
           if (retriesLeft > 0) {
             _showRetryingStatus(retriesLeft);
             setTimeout(() => attempt(retriesLeft - 1), AUTO_RETRY_DELAY_MS);
@@ -351,8 +351,8 @@ export function initUrlAuth() {
         showWakingUpMessage(false);
         setBalanceLoading(false);
 
-        // Launch token expired — tell the user to get a fresh link from Telegram
-        if (err.code === 'LAUNCH_TOKEN_EXPIRED') {
+        // Launch token expired or invalid — tell the user to get a fresh link from Telegram
+        if (err.code === 'LAUNCH_TOKEN_EXPIRED' || err.code === 'INVALID_LAUNCH_TOKEN') {
           gate.reject(err);
           showExpiredOverlay();
           resolve(params);
