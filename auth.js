@@ -84,8 +84,8 @@ function showUnauthorizedPopup(reason) {
   if (existing) existing.remove()
 
   const isExpired = reason === 'LAUNCH_TOKEN_EXPIRED'
-  const title    = isExpired ? '⏰ Session Expired'  : 'Unauthorized'
-  const message  = isExpired
+  const title = isExpired ? 'Session Expired' : 'Unauthorized'
+  const message = isExpired
     ? 'Your game session has expired. Please go back to Telegram and tap Play again to get a fresh link.'
     : 'This app requires a valid token and launch value to continue. Please open the app from Telegram.'
   const btnLabel = isExpired ? 'Back to Telegram' : 'Retry'
@@ -98,15 +98,15 @@ function showUnauthorizedPopup(reason) {
     'z-index:10000',
     'display:grid',
     'place-items:center',
-    'background:rgba(10,14,26,0.96)',
+    'background:rgba(13,13,13,0.96)',
     'padding:24px'
   ].join(';')
 
   overlay.innerHTML = `
-    <div style="max-width:480px;width:100%;background:#0f172a;color:#f8fafc;padding:32px;border-radius:28px;box-shadow:0 32px 80px rgba(0,0,0,0.35);text-align:center;font-family:Inter,system-ui,sans-serif;">
-      <div style="font-size:2rem;font-weight:800;margin-bottom:16px;">${title}</div>
-      <p style="margin:0 0 24px;color:#cbd5e1;line-height:1.6;">${message}</p>
-      <button id="unauthRetryBtn" style="padding:12px 20px;border-radius:14px;background:#2563eb;color:#fff;border:none;font-size:1rem;cursor:pointer;">${btnLabel}</button>
+    <div style="max-width:520px;width:100%;background:#111111;border:1px solid rgba(212,160,23,0.2);color:#f5e6c8;padding:38px 32px 28px;border-radius:28px;box-shadow:0 32px 80px rgba(0,0,0,0.45);text-align:center;font-family:'Rajdhani',Inter,system-ui,sans-serif;">
+      <div style="font-family:'Cinzel',serif;font-size:2.8rem;font-weight:900;line-height:1.1;margin-bottom:18px;color:#f5e6c8;letter-spacing:-0.04em;">${title}</div>
+      <p style="margin:0 0 28px;color:#d4c5a3;line-height:1.5;font-size:1.15rem;">${message}</p>
+      <button id="unauthRetryBtn" style="width:min(220px,100%);padding:16px 24px;border-radius:14px;background:linear-gradient(135deg,#a07810,#d4a017);color:#1a1408;border:none;font-size:1.05rem;font-weight:800;cursor:pointer;box-shadow:0 12px 28px rgba(212,160,23,0.28);">${btnLabel}</button>
     </div>
   `
 

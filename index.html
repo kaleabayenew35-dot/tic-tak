@@ -13,9 +13,10 @@
   <div class="auth-screen hidden" id="authScreen">
     <div class="auth-card">
       <div class="auth-badge">XO Mini App</div>
-      <h1>Access Denied</h1>
-      <p class="auth-message">You are not allowed to continue. Authentication parameters are missing or invalid.</p>
-      <p class="auth-note">This app only runs when a valid <code>token</code>, <code>username</code>, <code>phoneNumber</code>, and <code>balance</code> are provided in the URL or stored session.</p>
+      <h1>Unauthorized</h1>
+      <p class="auth-message">This app requires a valid token and launch value to continue. Please open the app from Telegram.</p>
+      <p class="auth-note">Open the mini app from Telegram to continue.</p>
+      <button class="auth-retry" type="button" onclick="window.location.reload()">Retry</button>
     </div>
   </div>
 
@@ -27,70 +28,60 @@
   </div>
 
   <div id="appWrapper">
-  <!-- ══════════════════════════════════════════
-       PAGE WRAPPER  (topbar + two-column layout)
-  ══════════════════════════════════════════ -->
-  <div class="page-wrapper">
+    <div class="page-wrapper">
 
-    <!-- ── GLOBAL TOP BAR ── -->
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="avatar">X</div>
-        <div class="topbar-info">
-          <span class="topbar-name">Loading…</span>
-          <span class="topbar-balance">💰 0 ETB</span>
+      <div class="screen main-menu" id="dashboardScreen">
+        <header class="top-bar topbar">
+          <div class="tb-user topbar-left">
+            <div class="avatar tg-avatar">X</div>
+            <div class="tb-user-info topbar-info">
+              <span class="topbar-name tg-name">Loading…</span>
+              <div class="tb-balance-row">
+                <span class="tb-balance topbar-balance">💰 0 ETB</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tb-logo topbar-center">
+            <span class="tb-logo-icon">X</span>
+            <span class="tb-logo-text">XO</span>
+          </div>
+
+          <div class="tb-right topbar-right">
+            <button class="icon-btn tb-icon-btn" id="shareBtn" aria-label="share">🔗</button>
+            <button class="icon-btn tb-icon-btn" aria-label="notifications">🔔</button>
+            <button class="icon-btn tb-icon-btn" aria-label="help">?</button>
+          </div>
+        </header>
+
+        <div class="bet-bar">
+          <span class="bet-bar-label">Your Bet</span>
+          <div class="bet-presets" id="betChips">
+            <button class="bet-chip" data-amount="10">10</button>
+            <button class="bet-chip" data-amount="20">20</button>
+            <button class="bet-chip" data-amount="30">30</button>
+            <button class="bet-chip" data-amount="50">50</button>
+            <button class="bet-chip" data-amount="100">100</button>
+            <button class="bet-chip" data-amount="200">200</button>
+            <button class="bet-chip" data-amount="500">500</button>
+          </div>
+          <div class="bet-input-wrap" id="betDisplay">
+            <span class="bet-currency">BAL</span>
+            <span class="bet-balance-value">Pick amount</span>
+          </div>
+          <span class="bet-selected-tag hidden" id="betSelectedTag"></span>
         </div>
-      </div>
-      <div class="topbar-center">
-        <span class="topbar-brand">XO <span class="brand-accent">Game</span></span>
-      </div>
-      <div class="topbar-right">
-        <button class="icon-btn" id="shareBtn" aria-label="share">🔗</button>
-        <button class="icon-btn" aria-label="notifications">🔔</button>
-        <button class="icon-btn" aria-label="help">?</button>
-      </div>
-    </header>
 
-    <!-- ── TWO-COLUMN BODY ── -->
-    <div class="layout">
-
-      <!-- ════════ MAIN COLUMN ════════ -->
-      <main class="main-col">
-
-        <!-- ─── DASHBOARD SCREEN ─── -->
-        <div class="screen" id="dashboardScreen">
-
-          <!-- Online players -->
-          <div class="section-card">
-
-            <!-- ── SECTION HEADER with selected bet display ── -->
-            <div class="section-header">
-              <span class="section-title">Online Players</span>
-              <div class="header-right-group">
-                <span class="bet-selected-tag hidden" id="betSelectedTag"></span>
-                <span class="online-dot-label"><span class="online-dot"></span><span id="onlineCount">4 online</span></span>
-              </div>
+        <div class="home-body layout">
+          <div class="home-left main-col">
+            <div class="pl-header">
+              <span class="pl-title">Available Players</span>
+              <span class="online-dot-wrap">
+                <span class="online-dot"></span>
+                <span class="online-count" id="onlineCount">0 online</span>
+              </span>
             </div>
 
-            <!-- ── BET AMOUNT SELECTOR ── -->
-            <div class="bet-selector">
-              <div class="bet-selector-top">
-                <span class="bet-label">💰 Select Bet Amount</span>
-                <span class="bet-current unselected" id="betDisplay">Pick amount</span>
-              </div>
-              <div class="bet-chips" id="betChips">
-                <button class="bet-chip" data-amount="10">10</button>
-                <button class="bet-chip" data-amount="20">20</button>
-                <button class="bet-chip" data-amount="30">30</button>
-                <button class="bet-chip" data-amount="50">50</button>
-                <button class="bet-chip" data-amount="100">100</button>
-                <button class="bet-chip" data-amount="200">200</button>
-                <button class="bet-chip" data-amount="500">500</button>
-              </div>
-
-            </div>
-
-            <!-- Selected player banner — shown when a player is picked -->
             <div class="selected-banner hidden" id="selectedBanner">
               <div class="sb-left">
                 <div class="sb-avatar" id="sbAvatar"></div>
@@ -105,26 +96,62 @@
               </div>
             </div>
 
-            <div class="player-list" id="playerList"></div>
-      <div class="connection-banner hidden" id="connectionBanner">
-        <span id="connectionBannerText">You are offline.</span>
-        <button class="retry-button" id="connectionRetryButton" type="button">Retry</button>
+            <div class="players-list" id="playerList"></div>
+
+            <div class="connection-banner hidden" id="connectionBanner">
+              <span id="connectionBannerText">You are offline.</span>
+              <button class="retry-button" id="connectionRetryButton" type="button">Retry</button>
+            </div>
+          </div>
+
+          <aside class="home-right sidebar" id="sidebar">
+            <button class="sidebar-btn ai-btn" id="playAiSidebar" type="button">
+              <span class="sb-icon">🤖</span>
+              <span class="sb-label">vs AI</span>
+            </button>
+
+            <div class="sidebar-divider"></div>
+
+            <div class="sidebar-stats">
+              <div class="sbs-item">
+                <span class="sbs-num" id="sideWins">0</span>
+                <span class="sbs-lbl">Wins</span>
+              </div>
+              <div class="sbs-item">
+                <span class="sbs-num red" id="sideLosses">0</span>
+                <span class="sbs-lbl">Losses</span>
+              </div>
+              <div class="sbs-item">
+                <span class="sbs-num gold" id="sideDraws">0</span>
+                <span class="sbs-lbl">Draws</span>
+              </div>
+            </div>
+
+            <div class="winrate-row">
+              <div class="winrate-ring">
+                <svg viewBox="0 0 36 36" class="ring-svg">
+                  <circle class="ring-bg" cx="18" cy="18" r="15" />
+                  <circle class="ring-fill" cx="18" cy="18" r="15" stroke-dasharray="70 100" stroke-dashoffset="25" />
+                </svg>
+                <span class="ring-pct">70%</span>
+              </div>
+              <div class="winrate-info">
+                <span class="winrate-title">Win Rate</span>
+                <span class="winrate-sub">22 total games</span>
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
 
-        </div><!-- /dashboardScreen -->
-
-        <!-- ─── GAME SCREEN ─── -->
-        <div class="screen hidden" id="gameScreen">
-          <div class="game-inner">
-
-          <!-- Game top bar -->
+      <div class="screen hidden" id="gameScreen">
+        <div class="game-inner">
           <header class="game-topbar">
             <button class="back-btn" id="backButton" type="button" aria-label="back">←</button>
             <span class="game-topbar-title">XO Game</span>
             <button class="icon-btn" id="resetButton" type="button" aria-label="restart">↺</button>
           </header>
 
-          <!-- Versus bar -->
           <div class="versus-bar">
             <div class="vs-player active-player" id="playerX">
               <div class="vs-avatar x-color">X</div>
@@ -139,7 +166,6 @@
             </div>
           </div>
 
-          <!-- Turn indicator -->
           <div class="turn-bar">
             <div class="turn-indicator" id="turnIndicator">
               <span class="turn-dot x-dot"></span>
@@ -147,7 +173,6 @@
             </div>
           </div>
 
-          <!-- Board -->
           <div class="board" id="board">
             <button class="cell" data-index="0" aria-label="cell 1"></button>
             <button class="cell" data-index="1" aria-label="cell 2"></button>
@@ -160,7 +185,6 @@
             <button class="cell" data-index="8" aria-label="cell 9"></button>
           </div>
 
-          <!-- Round info -->
           <div class="round-bar">
             <span class="round-label">Round</span>
             <div class="round-dots">
@@ -171,92 +195,10 @@
           </div>
 
           <footer class="game-footer">Built for Telegram Mini App</footer>
-
-          </div><!-- /game-inner -->
-        </div><!-- /gameScreen -->
-
-      </main><!-- /main-col -->
-
-      <!-- ════════ RIGHT SIDEBAR ════════ -->
-      <aside class="sidebar" id="sidebar">
-
-        <!-- Play with AI card -->
-        <div class="sb-card ai-card">
-          <div class="sb-card-icon">🤖</div>
-          <div class="sb-card-body">
-            <span class="sb-card-title">Play vs AI</span>
-            <span class="sb-card-sub">Smart minimax opponent</span>
-          </div>
-          <button class="btn-primary sb-ai-btn" id="playAiSidebar" type="button">Play</button>
         </div>
-
-        <!-- Stats card -->
-        <div class="sb-card">
-          <div class="sb-section-hd">
-            <span class="sb-section-title">Your Stats</span>
-            <span class="sb-section-badge">Season 1</span>
-          </div>
-          <div class="sb-stats">
-            <div class="sb-stat win">
-              <div class="sb-stat-icon">🏆</div>
-              <div class="sb-stat-info">
-                <span class="sb-stat-num" id="sideWins">12</span>
-                <span class="sb-stat-lbl">Wins</span>
-              </div>
-              <div class="sb-stat-bar-wrap">
-                <div class="sb-stat-bar win-bar" style="width:75%"></div>
-              </div>
-            </div>
-            <div class="sb-stat draw">
-              <div class="sb-stat-icon">🤝</div>
-              <div class="sb-stat-info">
-                <span class="sb-stat-num" id="sideDraws">7</span>
-                <span class="sb-stat-lbl">Draws</span>
-              </div>
-              <div class="sb-stat-bar-wrap">
-                <div class="sb-stat-bar draw-bar" style="width:44%"></div>
-              </div>
-            </div>
-            <div class="sb-stat lose">
-              <div class="sb-stat-icon">💀</div>
-              <div class="sb-stat-info">
-                <span class="sb-stat-num" id="sideLosses">3</span>
-                <span class="sb-stat-lbl">Losses</span>
-              </div>
-              <div class="sb-stat-bar-wrap">
-                <div class="sb-stat-bar lose-bar" style="width:19%"></div>
-              </div>
-            </div>
-          </div>
-          <!-- Win-rate ring -->
-          <div class="winrate-row">
-            <div class="winrate-ring">
-              <svg viewBox="0 0 36 36" class="ring-svg">
-                <circle class="ring-bg"    cx="18" cy="18" r="15" />
-                <circle class="ring-fill"  cx="18" cy="18" r="15"
-                  stroke-dasharray="70 100"
-                  stroke-dashoffset="25" />
-              </svg>
-              <span class="ring-pct">70%</span>
-            </div>
-            <div class="winrate-info">
-              <span class="winrate-title">Win Rate</span>
-              <span class="winrate-sub">22 total games</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sidebar toggle handle (mobile) -->
-        <button class="sidebar-close" id="sidebarClose" aria-label="close sidebar">✕</button>
-
-      </aside><!-- /sidebar -->
-
-      <!-- Mobile sidebar toggle button -->
-      <button class="sidebar-fab" id="sidebarToggle" aria-label="open sidebar">📊</button>
-
-    </div><!-- /layout -->
-  </div><!-- /page-wrapper -->
-  </div><!-- /appWrapper -->
+      </div>
+    </div>
+  </div>
 
   <!-- ══════════════════════════════════════════
        RESULT POPUP
