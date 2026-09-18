@@ -35,7 +35,7 @@ export function getCurrentUserProfile() {
   };
 
   // cache it
-  import('./state.js').then(m => m.setState('currentUserProfile', profile)).catch(() => {});
+  setState('currentUserProfile', profile);
   return profile;
 }
 
