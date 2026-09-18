@@ -684,3 +684,16 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   color: var(--text-muted);
   font-size: .85rem;
 }
+
+/* ── How to play modal ──────────────────────────── */
+.htp-box  { max-height: 78vh; display: flex; flex-direction: column; }
+.htp-body { flex: 1; overflow-y: auto; padding: 14px 18px 20px; display: flex; flex-direction: column; gap: 14px; scrollbar-width: thin; }
+.htp-section { display: flex; flex-direction: column; gap: 6px; }
+.htp-section-title {
+  font-family: 'Cinzel', serif; font-size: .8rem; font-weight: 700;
+  color: var(--gold-light); letter-spacing: .06em;
+}
+.htp-section p, .htp-section ul {
+  font-size: .82rem; color: rgba(245,230,200,.75); line-height: 1.65;
+}
+.htp-section ul { padding-left: 16px; display: flex; flex-direction: column; gap: 4px; }

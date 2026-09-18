@@ -286,6 +286,23 @@ function bindListeners() {
     }
   });
 
+  // How to play modal
+  document.getElementById('howToPlayBtn')?.addEventListener('click', () => {
+    tgHaptic('light');
+    const m = document.getElementById('howToPlayModal');
+    if (m) { m.classList.remove('hidden'); setTimeout(() => m.classList.add('modal-show'), 10); }
+  });
+  document.getElementById('howToPlayClose')?.addEventListener('click', () => {
+    const m = document.getElementById('howToPlayModal');
+    if (m) { m.classList.remove('modal-show'); setTimeout(() => m.classList.add('hidden'), 300); }
+  });
+  document.getElementById('howToPlayModal')?.addEventListener('click', e => {
+    if (e.target.id === 'howToPlayModal') {
+      const m = document.getElementById('howToPlayModal');
+      m.classList.remove('modal-show'); setTimeout(() => m.classList.add('hidden'), 300);
+    }
+  });
+
   // History modal
   document.getElementById('historyBtn')?.addEventListener('click', () => {
     const m = document.getElementById('historyModal');

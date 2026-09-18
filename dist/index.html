@@ -13,8 +13,8 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <script type="module" crossorigin src="/assets/index-hl-mCm3W.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DC8CfLlR.css">
+  <script type="module" crossorigin src="/assets/index-3yj8NmcH.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DPhDV-7q.css">
 </head>
 <body>
 
@@ -58,6 +58,9 @@
       </div>
 
       <div class="tb-right">
+        <button class="tb-icon-btn" id="howToPlayBtn" aria-label="How to play">
+          <span class="tb-icon-btn-icon">❓</span>
+        </button>
         <button class="tb-icon-btn" id="historyBtn" aria-label="Game history">
           <span class="tb-icon-btn-icon">📜</span>
         </button>
@@ -266,6 +269,61 @@
       <div class="invite-modal-actions">
         <button class="btn-primary" id="inviteAcceptButton"  type="button">✅ Accept</button>
         <button class="btn-ghost"   id="inviteDeclineButton" type="button">✕ Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       HOW TO PLAY MODAL
+  ══════════════════════════════════════════ -->
+  <div id="howToPlayModal" class="modal-overlay hidden">
+    <div class="modal-box htp-box">
+      <div class="modal-header">
+        <span class="modal-title">❓ How to Play</span>
+        <button class="modal-close" id="howToPlayClose">✕</button>
+      </div>
+      <div class="htp-body">
+
+        <div class="htp-section">
+          <div class="htp-section-title">🎯 Objective</div>
+          <p>Get three of your marks in a row — horizontally, vertically, or diagonally — before your opponent does.</p>
+        </div>
+
+        <div class="htp-section">
+          <div class="htp-section-title">✕ Movement</div>
+          <ul>
+            <li>You play as <strong>X</strong>, your opponent plays as <strong>O</strong>.</li>
+            <li>Tap any empty cell to place your mark.</li>
+            <li>Players alternate turns until someone wins or the board is full.</li>
+          </ul>
+        </div>
+
+        <div class="htp-section">
+          <div class="htp-section-title">🏆 Winning</div>
+          <ul>
+            <li>Fill a row, column, or diagonal with your mark to win.</li>
+            <li>If all 9 cells are filled with no winner, the game is a <strong>Draw</strong>.</li>
+          </ul>
+        </div>
+
+        <div class="htp-section">
+          <div class="htp-section-title">👥 Live PvP</div>
+          <ul>
+            <li>Select a bet amount, then tap a player to challenge them.</li>
+            <li>The winner takes the full pot from both players.</li>
+            <li>Make sure you have enough balance before entering a match.</li>
+          </ul>
+        </div>
+
+        <div class="htp-section">
+          <div class="htp-section-title">🤖 vs AI</div>
+          <ul>
+            <li>Tap <strong>vs AI</strong> to play against a bot.</li>
+            <li>Bots range from <em>Very Easy</em> to <em>Very Hard</em>.</li>
+            <li>The hardest bot plays perfectly — can you draw against it?</li>
+          </ul>
+        </div>
+
       </div>
     </div>
   </div>
