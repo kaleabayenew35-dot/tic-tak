@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="theme-color" content="#0d0d0d"/>
+  <title>XO Game</title>
+
+  <!-- Telegram Mini App SDK (must load first) -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script type="module" crossorigin src="/assets/index-CThCEyRW.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DdnK3obG.css">
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════
+       LOADING SCREEN (dama-style)
+  ══════════════════════════════════════════ -->
+  <div id="loader" class="loader-wrapper">
+    <div class="loader-bg"></div>
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <h1 class="loader-title">XO</h1>
+      <p class="loader-subtitle" id="loaderSubtitle">XO Game</p>
+    </div>
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MAIN MENU / DASHBOARD
+  ══════════════════════════════════════════ -->
+  <div id="dashboardScreen" class="screen main-menu hidden">
+
+    <header class="top-bar">
+      <div class="tb-user">
+        <div class="tg-avatar avatar">X</div>
+        <div class="tb-user-info">
+          <span class="tg-name topbar-name">Loading…</span>
+          <div class="tb-balance-row">
+            <span class="tb-balance topbar-balance">💰 0 ETB</span>
+            <button class="tb-bal-refresh" id="balRefreshBtn" title="Refresh balance">↻</button>
+            <span class="tb-bal-spinner hidden" id="balSpinner"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tb-logo">
+        <span class="tb-logo-icon">X</span>
+        <span class="tb-logo-text">XO</span>
+      </div>
+
+      <div class="tb-right">
+        <button class="tb-icon-btn" id="historyBtn" aria-label="Game history">
+          <span class="tb-icon-btn-icon">📜</span>
+        </button>
+        <div class="tb-countdown">
+          <div class="cd-ring">
+            <svg class="cd-svg" viewBox="0 0 40 40">
+              <circle class="cd-bg"  cx="20" cy="20" r="17"/>
+              <circle class="cd-arc" cx="20" cy="20" r="17" id="cdArc"/>
+            </svg>
+            <span class="cd-num" id="cdNum">20</span>
+          </div>
+          <span class="cd-label">Next match</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Bet bar -->
+    <div class="bet-bar">
+      <span class="bet-bar-label">Your Bet</span>
+      <div class="bet-presets" id="betChips">
+        <button class="bet-chip" data-amount="10">10</button>
+        <button class="bet-chip" data-amount="50">50</button>
+        <button class="bet-chip" data-amount="100">100</button>
+        <button class="bet-chip" data-amount="250">250</button>
+        <button class="bet-chip" data-amount="500">500</button>
+      </div>
+      <div class="bet-input-wrap unselected" id="betDisplay">
+        <span class="bet-currency">BAL</span>
+        <span class="bet-balance-value">Pick amount</span>
+      </div>
+      <span class="bet-selected-tag hidden" id="betSelectedTag"></span>
+    </div>
+
+    <!-- Home body -->
+    <div class="home-body">
+
+      <div class="home-left">
+        <div class="pl-header">
+          <span class="pl-title">Available Players</span>
+          <span class="online-dot-wrap">
+            <span class="online-dot"></span>
+            <span class="online-count" id="onlineCount">0 online</span>
+          </span>
+        </div>
+
+        <div class="selected-banner hidden" id="selectedBanner">
+          <div class="sb-left">
+            <div class="sb-avatar" id="sbAvatar">?</div>
+            <div class="sb-meta">
+              <span class="sb-username" id="sbUsername"></span>
+              <span class="sb-status-txt" id="sbStatusTxt">Ready to play ✓</span>
+            </div>
+          </div>
+          <div class="sb-right">
+            <span class="sb-bet-tag" id="sbBetTag"></span>
+            <button class="sb-cancel-btn" id="sbCancelBtn" type="button">✕ Cancel</button>
+          </div>
+        </div>
+
+        <div class="players-list" id="playerList"></div>
+
+        <div class="connection-banner hidden" id="connectionBanner">
+          <span id="connectionBannerText">You are offline.</span>
+          <button class="retry-button" id="connectionRetryButton" type="button">Retry</button>
+        </div>
+      </div>
+
+      <aside class="home-right sidebar" id="sidebar">
+        <button class="sidebar-btn ai-btn" id="playAiSidebar" type="button">
+          <span class="sb-icon">🤖</span>
+          <span class="sb-label">vs AI</span>
+          <div class="btn-shine"></div>
+        </button>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-stats">
+          <div class="sbs-item">
+            <span class="sbs-num" id="sideWins">0</span>
+            <span class="sbs-lbl">Wins</span>
+          </div>
+          <div class="sbs-item">
+            <span class="sbs-num red" id="sideLosses">0</span>
+            <span class="sbs-lbl">Losses</span>
+          </div>
+          <div class="sbs-item">
+            <span class="sbs-num gold" id="sideDraws">0</span>
+            <span class="sbs-lbl">Draws</span>
+          </div>
+        </div>
+
+        <div class="winrate-row">
+          <div class="winrate-ring">
+            <svg viewBox="0 0 36 36" class="ring-svg">
+              <circle class="ring-bg"   cx="18" cy="18" r="15"/>
+              <circle class="ring-fill" cx="18" cy="18" r="15" stroke-dasharray="0 100" stroke-dashoffset="25"/>
+            </svg>
+            <span class="ring-pct">0%</span>
+          </div>
+          <div class="winrate-info">
+            <span class="winrate-title">Win Rate</span>
+            <span class="winrate-sub">0 total games</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+    <button class="sidebar-fab hidden" id="sidebarToggle" aria-label="Open sidebar">☰</button>
+    <button class="sidebar-close hidden" id="sidebarClose" aria-label="Close sidebar">✕</button>
+
+    <footer class="site-footer"><p>© 2026 XO · Ethiopia 🇪🇹</p></footer>
+  </div>
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay hidden" id="sidebarOverlay"></div>
+
+  <!-- ══════════════════════════════════════════
+       GAME SCREEN
+  ══════════════════════════════════════════ -->
+  <div class="screen hidden" id="gameScreen">
+    <div class="game-inner">
+      <header class="game-topbar">
+        <button class="back-btn" id="backButton" type="button" aria-label="back">←</button>
+        <span class="game-topbar-title">XO Game</span>
+        <button class="icon-btn" id="resetButton" type="button" aria-label="restart">↺</button>
+      </header>
+
+      <div class="versus-bar">
+        <div class="vs-player active-player" id="playerX">
+          <div class="vs-avatar x-color">X</div>
+          <span class="vs-name">You</span>
+          <span class="vs-score" id="scoreX">0</span>
+        </div>
+        <div class="vs-divider">VS</div>
+        <div class="vs-player" id="playerO">
+          <div class="vs-avatar o-color">O</div>
+          <span class="vs-name" id="opponentName">Opponent</span>
+          <span class="vs-score" id="scoreO">0</span>
+        </div>
+      </div>
+
+      <div class="turn-bar">
+        <div class="turn-indicator" id="turnIndicator">
+          <span class="turn-dot x-dot"></span>
+          <span id="statusText">Your turn — X</span>
+        </div>
+      </div>
+
+      <div class="board" id="board">
+        <button class="cell" data-index="0" aria-label="cell 1"></button>
+        <button class="cell" data-index="1" aria-label="cell 2"></button>
+        <button class="cell" data-index="2" aria-label="cell 3"></button>
+        <button class="cell" data-index="3" aria-label="cell 4"></button>
+        <button class="cell" data-index="4" aria-label="cell 5"></button>
+        <button class="cell" data-index="5" aria-label="cell 6"></button>
+        <button class="cell" data-index="6" aria-label="cell 7"></button>
+        <button class="cell" data-index="7" aria-label="cell 8"></button>
+        <button class="cell" data-index="8" aria-label="cell 9"></button>
+      </div>
+
+      <div class="round-bar">
+        <span class="round-label">Round</span>
+        <div class="round-dots">
+          <span class="round-dot active"></span>
+          <span class="round-dot"></span>
+          <span class="round-dot"></span>
+        </div>
+      </div>
+
+      <footer class="game-footer">Built for Telegram Mini App</footer>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       RESULT MODAL
+  ══════════════════════════════════════════ -->
+  <div class="result-overlay hidden" id="resultOverlay">
+    <div class="result-card">
+      <div class="confetti-wrap" id="confettiWrap"></div>
+      <div class="result-emoji" id="resultEmoji">🏆</div>
+      <h2 class="result-title" id="resultMessage">You Win!</h2>
+      <p class="result-sub" id="resultSub">Outstanding move!</p>
+      <div class="result-bet-row hidden" id="resultBetRow">
+        <span class="result-bet-label">Bet</span>
+        <span class="result-bet-amount" id="resultBetAmount">₿ 0</span>
+        <span class="result-bet-outcome" id="resultBetOutcome">+₿ 0</span>
+      </div>
+      <div class="result-actions">
+        <button class="btn-primary" id="closeModalButton" type="button">▶ Play Again</button>
+        <button class="btn-ghost"   id="modalHomeButton"  type="button">⌂ Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       INVITE / CHALLENGE MODAL
+  ══════════════════════════════════════════ -->
+  <div class="invite-modal-overlay hidden" id="inviteModalOverlay">
+    <div class="invite-modal-card">
+      <div class="invite-modal-icon">⚔️</div>
+      <div class="invite-modal-avatar" id="inviteModalAvatar">?</div>
+      <h3 id="inviteModalTitle">Challenge Incoming!</h3>
+      <p  id="inviteModalMessage">A player wants to challenge you for</p>
+      <div class="invite-modal-bet" id="inviteModalBet">₿ 0 ETB</div>
+      <div class="invite-modal-actions">
+        <button class="btn-primary" id="inviteAcceptButton"  type="button">✅ Accept</button>
+        <button class="btn-ghost"   id="inviteDeclineButton" type="button">✕ Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       HISTORY MODAL
+  ══════════════════════════════════════════ -->
+  <div id="historyModal" class="modal-overlay hidden">
+    <div class="modal-box hist-box">
+      <div class="modal-header">
+        <span class="modal-title">📜 Game History</span>
+        <button class="modal-close" id="historyClose">✕</button>
+      </div>
+      <div id="historyBody" class="hist-body">
+        <div style="padding:20px;text-align:center;color:rgba(255,255,255,.5)">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading overlay (in-app, not the boot loader) -->
+  <div class="loading-overlay hidden" id="loadingOverlay">
+    <div class="loading-card">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <p class="loading-text" id="loadingOverlayText">Loading app…</p>
+    </div>
+  </div>
+
+</body>
+</html>

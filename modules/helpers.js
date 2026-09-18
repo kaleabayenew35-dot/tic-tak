@@ -2,7 +2,7 @@
    modules/helpers.js — Pure utility functions.
 ═══════════════════════════════════════════════════ */
 
-import { getState } from './state.js';
+import { getState, setState } from './state.js';
 
 export function formatBalance(value) {
   const n = Number(String(value).replace(/[^0-9.\-]/g, ''));
