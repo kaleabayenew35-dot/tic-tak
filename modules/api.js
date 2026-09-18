@@ -6,12 +6,15 @@ const _fallback = (window.location.hostname === 'localhost' || window.location.h
   ? 'http://localhost:5000'
   : 'https://tic-tak-backend.onrender.com';
 
+// VITE_API_BASE_URL may include a trailing "/api" — strip it so all
+// route paths (which already start with /api/...) don't double up.
+const _viteBase = import.meta.env?.VITE_API_BASE_URL
+  ?.replace(/\/api\/?$/, '')
+  .replace(/\/+$/, '');
+
 export const API_URL = (
-  // 1. Injected by Vite at build time from .env VITE_API_BASE_URL
-  import.meta.env?.VITE_API_BASE_URL?.replace(/\/+$/, '') ||
-  // 2. Runtime override set by the server/CDN (e.g. window.__XO_BACKEND_URL__)
+  _viteBase ||
   window.__XO_BACKEND_URL__?.replace(/\/+$/, '') ||
-  // 3. Hard fallback
   _fallback
 );
 
