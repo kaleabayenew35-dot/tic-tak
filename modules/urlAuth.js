@@ -54,10 +54,68 @@ function isValid(params) {
 }
 
 export function shouldTreatAsNonBlocking(reason) {
-  if (typeof reason === 'number') return [401, 403].includes(reason);
+  // 401 is handled separately (expiry vs invalid token) — only treat 403 as hard block here
+  if (typeof reason === 'number') return reason === 403;
   const text = String(reason || '').toLowerCase();
-  return [401, 403].some(code => text.includes(String(code)))
-    || /unauthorized|forbidden|invalid launch|expired|invalid or inactive token/i.test(text);
+  return text.includes('403')
+    || /forbidden|invalid or inactive token/i.test(text);
+}
+
+/* ── Expired session overlay ─────────────────────────────────── */
+
+function showExpiredOverlay() {
+  // Remove any existing overlay
+  document.getElementById('urlAuthBlock')?.remove();
+  document.body.style.overflow = 'hidden';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'urlAuthBlock';
+  overlay.style.cssText = [
+    'position:fixed','inset:0','z-index:99999',
+    'background:radial-gradient(ellipse at center,#1a0a00 0%,#0d0d0d 70%)',
+    'display:flex','flex-direction:column',
+    'align-items:center','justify-content:center',
+    'gap:18px','padding:32px 24px','text-align:center',
+  ].join(';');
+
+  overlay.innerHTML = `
+    <style>
+      @keyframes expiredPulse{0%,100%{transform:scale(1)}50%{transform:scale(.92)}}
+      #urlAuthBlock .exp-icon{animation:expiredPulse 2s ease-in-out infinite}
+    </style>
+    <div class="exp-icon" style="font-size:3.6rem;line-height:1;">⏰</div>
+    <div style="font-family:'Cinzel',serif;font-size:1.4rem;font-weight:900;color:#f0c94a;">
+      Session Expired
+    </div>
+    <div style="color:rgba(245,230,200,.75);font-size:.9rem;max-width:300px;line-height:1.65;">
+      Your game session has expired.<br>
+      Go back to Telegram and tap <strong>Play</strong> again to get a fresh link.
+    </div>
+    <button id="expiredBackBtn" style="
+      background:linear-gradient(135deg,#a07810,#d4a017);color:#1a1005;
+      border:none;border-radius:999px;padding:13px 32px;
+      font-weight:800;cursor:pointer;font-family:inherit;font-size:.95rem;
+      box-shadow:0 4px 14px rgba(212,160,23,.35);margin-top:4px;">
+      ← Back to Telegram
+    </button>`;
+
+  const mount = () => {
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'none';
+    document.body.appendChild(overlay);
+
+    document.getElementById('expiredBackBtn')?.addEventListener('click', () => {
+      if (window.Telegram?.WebApp?.close) {
+        window.Telegram.WebApp.close();
+      } else {
+        // Outside Telegram — just clear params so a fresh link can be used
+        window.history.replaceState({}, '', window.location.pathname);
+        window.location.reload();
+      }
+    });
+  };
+
+  if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
 }
 
 /* ── Blocking overlays ───────────────────────────────────────── */
@@ -169,14 +227,16 @@ async function fetchPlayerBalance(token, launch) {
     body:    JSON.stringify({ token, launch }),
     signal:  AbortSignal.timeout(BALANCE_FETCH_TIMEOUT_MS),
   });
+
+  const json = await res.json().catch(() => ({}));
+
   if (!res.ok) {
-    const json = await res.json().catch(() => ({}));
     const err  = new Error(json.error || `HTTP ${res.status}`);
     err.status = res.status;
     err.code   = json.code || null;
     throw err;
   }
-  const json = await res.json();
+
   const data = json?.data ?? json;
   return {
     balance:  data.balance  !== undefined ? Number(data.balance) : null,
@@ -203,6 +263,12 @@ export async function refreshBalance(silent = false) {
     updateBalanceDisplay(data.balance);
     window.XO_USERNAME = data.username;
   } catch (err) {
+    // Expired token — show the session-expired screen
+    if (err.code === 'LAUNCH_TOKEN_EXPIRED') {
+      showExpiredOverlay();
+      return;
+    }
+    // Any 401/403 — access denied, don't retry silently
     if (shouldTreatAsNonBlocking(err.status || err)) return;
     console.warn('[urlAuth] refreshBalance failed:', err.message);
     if (!silent) showAuthError("Couldn't connect to the game server. Check your connection.", () => refreshBalance(false));
@@ -285,7 +351,15 @@ export function initUrlAuth() {
         showWakingUpMessage(false);
         setBalanceLoading(false);
 
-        // Hard auth rejection — don't retry
+        // Launch token expired — tell the user to get a fresh link from Telegram
+        if (err.code === 'LAUNCH_TOKEN_EXPIRED') {
+          gate.reject(err);
+          showExpiredOverlay();
+          resolve(params);
+          return;
+        }
+
+        // Hard auth rejection (invalid token, forbidden) — don't retry
         if (shouldTreatAsNonBlocking(err.status || err)) {
           gate.reject(err);
           showInvalidOverlay(['token', 'launch'], {
@@ -296,8 +370,11 @@ export function initUrlAuth() {
           return;
         }
 
-        // Transient failure — auto-retry
-        if (retriesLeft > 0) {
+        // Transient failure — only retry on network errors or 5xx server errors
+        // 4xx errors (except those already handled above) mean the request itself
+        // is wrong — retrying won't help.
+        const isRetryable = !err.status || err.status >= 500;
+        if (isRetryable && retriesLeft > 0) {
           _showRetryingStatus(retriesLeft);
           setTimeout(() => attempt(retriesLeft - 1), AUTO_RETRY_DELAY_MS);
           return;
