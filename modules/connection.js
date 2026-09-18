@@ -1,68 +1,85 @@
-import { fetchStatus, fetchPlayers, fetchLiveChallenges } from './api.js'
-import { showLoadingOverlay, hideLoadingOverlay, showConnectionBanner, hideConnectionBanner, updateConnectionStatus } from './ui.js'
-import { renderPlayers, renderLiveChallenges } from './ui.js'
-import { connectLiveStream } from './live.js'
-import { appState } from './state.js'
-import { getCurrentUsername } from './helpers.js'
+/* ═══════════════════════════════════════════════════
+   modules/connection.js
+   Periodic backend ping + slide-in online/offline
+   banner. Mirrors dama_frontend/modules/connection.js.
+═══════════════════════════════════════════════════ */
 
-export async function attemptReconnect() {
-  showLoadingOverlay('Retrying connection…')
-  try {
-    await fetchStatus()
-    hideConnectionBanner()
-    await loadPlayers()
-    await loadLiveChallenges()
-    connectLiveStream()
-  } catch (error) {
-    console.warn('Reconnect failed', error)
-    showConnectionBanner('Retry failed. Still offline or unreachable.')
-  } finally {
-    hideLoadingOverlay()
+import { API_URL } from './api.js';
+
+export const initConnectionMonitor = (pingUrl = `${API_URL}/api/status`) => {
+  let currentState = null;  // null = unknown, true = online, false = offline
+  let hideTimer    = null;
+
+  // ── Banner element ────────────────────────────────────────────
+  let banner = document.getElementById('_connBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = '_connBanner';
+    Object.assign(banner.style, {
+      position:      'fixed',
+      top:           '0',
+      left:          '50%',
+      transform:     'translateX(-50%) translateY(-110%)',
+      zIndex:        '99998',
+      display:       'flex',
+      alignItems:    'center',
+      gap:           '8px',
+      padding:       '8px 20px',
+      borderRadius:  '0 0 12px 12px',
+      fontSize:      '0.82rem',
+      fontWeight:    '700',
+      fontFamily:    "'Rajdhani', sans-serif",
+      letterSpacing: '0.06em',
+      color:         '#fff',
+      pointerEvents: 'none',
+      transition:    'transform 0.35s cubic-bezier(.4,0,.2,1)',
+      whiteSpace:    'nowrap',
+      boxShadow:     '0 4px 18px rgba(0,0,0,.45)',
+    });
+    document.body.appendChild(banner);
   }
-}
 
-export async function loadPlayers() {
-  try {
-    const data = await fetchPlayers()
-    appState.onlinePlayers = Array.isArray(data)
-      ? data.filter((player) => (player.status || 'online') !== 'offline')
-      : []
-    renderPlayers()
-    updateOnlineCount()
-  } catch (error) {
-    console.error('Failed to load players', error)
-    appState.onlinePlayers = []
-    renderPlayers()
-    updateOnlineCount()
-    if (!navigator.onLine) {
-      updateConnectionStatus()
+  if (!document.getElementById('connAnimStyle')) {
+    const s = document.createElement('style');
+    s.id = 'connAnimStyle';
+    s.textContent = `
+      @keyframes connDotPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:0.6}}
+      .conn-dot{display:inline-block;width:8px;height:8px;border-radius:50%;animation:connDotPulse 1.2s ease-in-out infinite}
+    `;
+    document.head.appendChild(s);
+  }
+
+  function showBanner(online) {
+    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+    if (online) {
+      banner.style.background = 'linear-gradient(135deg,#1a5a1a,#27ae60)';
+      banner.innerHTML = '<span class="conn-dot" style="background:#7fffaa;"></span> Online';
     } else {
-      showConnectionBanner('Unable to load players. Retry?')
+      banner.style.background = 'linear-gradient(135deg,#7a1a1a,#c0392b)';
+      banner.innerHTML = '<span class="conn-dot" style="background:#ffaaaa;"></span> Offline — check your connection';
     }
+    banner.style.transform = 'translateX(-50%) translateY(0)';
+    hideTimer = setTimeout(() => {
+      banner.style.transform = 'translateX(-50%) translateY(-110%)';
+      hideTimer = null;
+    }, 5000);
   }
-}
 
-export async function loadLiveChallenges() {
-  try {
-    const data = await fetchLiveChallenges()
-    appState.liveChallenges = Array.isArray(data) ? data : []
-    renderLiveChallenges()
-  } catch (error) {
-    console.error('Failed to load live challenges', error)
+  function handleState(online) {
+    if (online === currentState) return;
+    currentState = online;
+    showBanner(online);
   }
-}
 
-export async function loadLiveMatches() {
-  try {
-    const data = await fetchLiveMatches()
-    appState.liveMatches = Array.isArray(data) ? data : []
-    const currentUser = normalizeUsername(getCurrentUsername())
-    const activeMatch = appState.liveMatches.find((match) => match?.status === 'active' && [normalizeUsername(match.player_x_username), normalizeUsername(match.player_o_username)].includes(currentUser))
-    if (activeMatch && !appState.activeMatchId && appState.matchViewOpen) {
-      setActiveMatchId(activeMatch.id)
-      enterMatchScreen(activeMatch)
-    }
-  } catch (error) {
-    console.error('Failed to load live matches', error)
-  }
-}
+  window.addEventListener('online',  () => handleState(true));
+  window.addEventListener('offline', () => handleState(false));
+
+  const ping = () => {
+    fetch(pingUrl, { cache: 'no-store' })
+      .then(r => handleState(r.ok))
+      .catch(() => handleState(false));
+  };
+
+  setInterval(ping, 15000);
+  ping();
+};
