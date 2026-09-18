@@ -145,6 +145,29 @@ async function openAiModal() {
 }
 
 // ── 3. Bet display ────────────────────────────────────────────
+function _getCurrentBalance() {
+  const b = window.XO_BALANCE;
+  if (b === null || b === undefined) return null;
+  return Number(b);
+}
+
+// Disable chips whose amount exceeds the current balance — mirrors dama exactly.
+function updateBetBarState() {
+  const balance = _getCurrentBalance();
+  document.querySelectorAll('.bet-chip').forEach(btn => {
+    const amount   = Number(btn.dataset.amount || 0);
+    const tooHigh  = balance !== null && amount > balance;
+    btn.disabled   = tooHigh;
+    btn.classList.toggle('disabled', tooHigh);
+    // If this chip was the active selection but is now unaffordable, deselect it
+    if (tooHigh && btn.classList.contains('active')) {
+      btn.classList.remove('active');
+      setState('betAmount', 0);
+      updateBetDisplay();
+    }
+  });
+}
+
 function updateBetDisplay() {
   const amt = getState('betAmount');
   if (!betDisplay) return;
@@ -206,10 +229,16 @@ function bindListeners() {
 
   betChips?.addEventListener('click', async (e) => {
     const chip = e.target.closest('.bet-chip');
-    if (!chip) return;
+    if (!chip || chip.disabled) return;
+    const amt = Number(chip.dataset.amount);
+    const balance = _getCurrentBalance();
+    if (balance !== null && amt > balance) {
+      // Shouldn't reach here (button is disabled), but guard just in case
+      return;
+    }
     betChips.querySelectorAll('.bet-chip').forEach(b => b.classList.remove('active'));
     chip.classList.add('active');
-    setState('betAmount', Number(chip.dataset.amount));
+    setState('betAmount', amt);
     await updateBetDisplay();
   });
 
@@ -433,6 +462,10 @@ initLoader(() => {
     // Show the dashboard — it starts hidden and nothing else reveals it on first load
     const dash = document.getElementById('dashboardScreen');
     if (dash) dash.classList.remove('hidden');
+
+    // Apply bet bar state based on current balance, and keep it in sync
+    updateBetBarState();
+    window.addEventListener('xo-balance-changed', updateBetBarState);
 
     showLoadingOverlay('Loading app…');
     startLivePolling({
