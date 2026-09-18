@@ -322,6 +322,10 @@ initLoader(() => {
     updateConnectionStatus();
     registerOnlineUser();
 
+    // Show the dashboard — it starts hidden and nothing else reveals it on first load
+    const dash = document.getElementById('dashboardScreen');
+    if (dash) dash.classList.remove('hidden');
+
     showLoadingOverlay('Loading app…');
     startLivePolling({
       onChallengeReceived: c  => showInviteModal(c),
