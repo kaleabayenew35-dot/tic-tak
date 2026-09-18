@@ -6,7 +6,7 @@
   <title>XO Game</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 </head>
 <body>
 
@@ -33,9 +33,9 @@
       <div class="screen main-menu" id="dashboardScreen">
         <header class="top-bar topbar">
           <div class="tb-user topbar-left">
-            <div class="avatar tg-avatar">X</div>
+            <div class="tg-avatar avatar">X</div>
             <div class="tb-user-info topbar-info">
-              <span class="topbar-name tg-name">Loading…</span>
+              <span class="tg-name topbar-name">Loading…</span>
               <div class="tb-balance-row">
                 <span class="tb-balance topbar-balance">💰 0 ETB</span>
               </div>
@@ -48,9 +48,18 @@
           </div>
 
           <div class="tb-right topbar-right">
-            <button class="icon-btn tb-icon-btn" id="shareBtn" aria-label="share">🔗</button>
-            <button class="icon-btn tb-icon-btn" aria-label="notifications">🔔</button>
-            <button class="icon-btn tb-icon-btn" aria-label="help">?</button>
+            <button class="tb-icon-btn" id="howToPlayBtn" aria-label="how to play">❓</button>
+            <button class="tb-icon-btn" id="historyBtn" aria-label="game history">📜</button>
+            <div class="tb-countdown" aria-label="countdown">
+              <div class="cd-ring">
+                <svg class="cd-svg" viewBox="0 0 40 40">
+                  <circle class="cd-bg" cx="20" cy="20" r="17"></circle>
+                  <circle class="cd-arc" cx="20" cy="20" r="17" id="cdArc"></circle>
+                </svg>
+                <span class="cd-num" id="cdNum">20</span>
+              </div>
+              <span class="cd-label">Next match</span>
+            </div>
           </div>
         </header>
 
@@ -108,6 +117,7 @@
             <button class="sidebar-btn ai-btn" id="playAiSidebar" type="button">
               <span class="sb-icon">🤖</span>
               <span class="sb-label">vs AI</span>
+              <div class="btn-shine"></div>
             </button>
 
             <div class="sidebar-divider"></div>
@@ -142,6 +152,10 @@
             </div>
           </aside>
         </div>
+
+        <footer class="site-footer">
+          <p>© 2026 XO · Ethiopia 🇪🇹</p>
+        </footer>
       </div>
 
       <div class="screen hidden" id="gameScreen">

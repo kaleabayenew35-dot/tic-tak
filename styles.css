@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────
    ROOT & RESET
 ───────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@400;500;600;700;800;900&display=swap');
 
 :root {
   --bg:        #0d0d0d;
@@ -146,10 +146,10 @@ button:focus-visible { outline: 2px solid var(--x-color); outline-offset: 2px; }
 
 .auth-card {
   width: min(520px, 100%);
-  background: rgba(19,28,46,0.98);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(17,17,17,0.96);
+  border: 1px solid rgba(212,160,23,0.2);
   border-radius: 28px;
-  box-shadow: 0 20px 80px rgba(0,0,0,0.35);
+  box-shadow: 0 20px 80px rgba(0,0,0,0.45);
   padding: 32px;
   display: flex;
   flex-direction: column;
@@ -162,8 +162,8 @@ button:focus-visible { outline: 2px solid var(--x-color); outline-offset: 2px; }
   justify-content: center;
   padding: 8px 14px;
   border-radius: 999px;
-  background: rgba(59,130,246,0.11);
-  color: #93c5fd;
+  background: rgba(212,160,23,0.12);
+  color: var(--gold-light);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -217,6 +217,17 @@ button:focus-visible { outline: 2px solid var(--x-color); outline-offset: 2px; }
   border-radius: 8px;
 }
 
+.site-footer {
+  position: relative;
+  z-index: 2;
+  padding: 12px 18px 18px;
+  text-align: center;
+  color: var(--text3);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 /* ─────────────────────────────────────────
    PAGE WRAPPER & LAYOUT
 ───────────────────────────────────────── */
@@ -246,8 +257,30 @@ button:focus-visible { outline: 2px solid var(--x-color); outline-offset: 2px; }
 }
 
 .topbar-left { display: flex; align-items: center; gap: 12px; }
-.topbar-right { display: flex; gap: 8px; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
 .topbar-center { flex: 1; text-align: center; }
+
+.tb-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text2);
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  transition: 0.2s ease;
+}
+.tb-icon-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+.tb-countdown { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
+.cd-ring { position: relative; width: 40px; height: 40px; }
+.cd-svg { width: 40px; height: 40px; transform: rotate(-90deg); }
+.cd-bg { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 3; }
+.cd-arc { fill: none; stroke: var(--gold); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 106.8; stroke-dashoffset: 0; }
+.cd-num { position: absolute; inset: 0; display: grid; place-items: center; font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 900; color: var(--gold); }
+.cd-label { font-size: 0.5rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); font-weight: 600; }
 
 .topbar-brand {
   font-size: 1.1rem;
@@ -326,6 +359,34 @@ button:focus-visible { outline: 2px solid var(--x-color); outline-offset: 2px; }
   border-left: 1px solid rgba(255,255,255,0.06);
 }
 .sidebar::-webkit-scrollbar { display: none; }
+
+.sidebar-btn {
+  position: relative;
+  width: 100%;
+  min-height: 66px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 18px;
+  border: 1px solid rgba(212,160,23,0.25);
+  background: linear-gradient(135deg, rgba(212,160,23,0.16), rgba(255,255,255,0.04));
+  color: var(--text);
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(212,160,23,0.08);
+}
+.sidebar-btn .btn-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.08) 48%, transparent 100%);
+  transform: translateX(-120%);
+  transition: transform 0.55s ease;
+}
+.sidebar-btn:hover .btn-shine { transform: translateX(120%); }
+.sb-icon { font-size: 1.3rem; line-height: 1; }
+.sb-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; }
+.sidebar-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.08); }
 
 /* Sidebar card base */
 .sb-card {
