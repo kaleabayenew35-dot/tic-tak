@@ -63,12 +63,12 @@ function cleanAuthUrl() {
   window.history.replaceState({}, document.title, nextUrl)
 }
 
-function showNotAllowedScreen() {
+function showNotAllowedScreen(reason) {
   const authScreen = document.getElementById('authScreen')
   const appWrapper = document.getElementById('appWrapper')
   if (authScreen) authScreen.classList.remove('hidden')
   if (appWrapper) appWrapper.classList.add('hidden')
-  showUnauthorizedPopup()
+  showUnauthorizedPopup(reason)
 }
 
 function showAppScreen() {
@@ -78,8 +78,18 @@ function showAppScreen() {
   if (appWrapper) appWrapper.classList.remove('hidden')
 }
 
-function showUnauthorizedPopup() {
-  if (document.getElementById('unauthorizedPopup')) return
+function showUnauthorizedPopup(reason) {
+  // Remove any existing popup so we can show a fresh one with the right message.
+  const existing = document.getElementById('unauthorizedPopup')
+  if (existing) existing.remove()
+
+  const isExpired = reason === 'LAUNCH_TOKEN_EXPIRED'
+  const title    = isExpired ? '⏰ Session Expired'  : 'Unauthorized'
+  const message  = isExpired
+    ? 'Your game session has expired. Please go back to Telegram and tap Play again to get a fresh link.'
+    : 'This app requires a valid token and launch value to continue. Please open the app from Telegram.'
+  const btnLabel = isExpired ? 'Back to Telegram' : 'Retry'
+
   const overlay = document.createElement('div')
   overlay.id = 'unauthorizedPopup'
   overlay.style.cssText = [
@@ -94,9 +104,9 @@ function showUnauthorizedPopup() {
 
   overlay.innerHTML = `
     <div style="max-width:480px;width:100%;background:#0f172a;color:#f8fafc;padding:32px;border-radius:28px;box-shadow:0 32px 80px rgba(0,0,0,0.35);text-align:center;font-family:Inter,system-ui,sans-serif;">
-      <div style="font-size:2rem;font-weight:800;margin-bottom:16px;">Unauthorized</div>
-      <p style="margin:0 0 24px;color:#cbd5e1;line-height:1.6;">This app requires a valid token and launch value to continue. Please authenticate or open the app with valid credentials.</p>
-      <button id="unauthRetryBtn" style="padding:12px 20px;border-radius:14px;background:#2563eb;color:#fff;border:none;font-size:1rem;cursor:pointer;">Retry</button>
+      <div style="font-size:2rem;font-weight:800;margin-bottom:16px;">${title}</div>
+      <p style="margin:0 0 24px;color:#cbd5e1;line-height:1.6;">${message}</p>
+      <button id="unauthRetryBtn" style="padding:12px 20px;border-radius:14px;background:#2563eb;color:#fff;border:none;font-size:1rem;cursor:pointer;">${btnLabel}</button>
     </div>
   `
 
@@ -107,7 +117,12 @@ function showUnauthorizedPopup() {
     retryBtn.addEventListener('click', () => {
       overlay.remove()
       document.body.style.overflow = ''
-      window.location.reload()
+      if (isExpired && window.Telegram?.WebApp?.close) {
+        // Close the Mini App so the user lands back in the Telegram chat.
+        window.Telegram.WebApp.close()
+      } else {
+        window.location.reload()
+      }
     })
   }
 }
@@ -146,8 +161,12 @@ async function fetchPlayerBalance(token, launch) {
     })
 
     const payload = await response.json().catch(() => ({}))
+
     if (!response.ok) {
-      throw new Error(payload.error || 'Could not fetch player balance')
+      // Attach a machine-readable code so callers can distinguish expiry from other errors.
+      const err = new Error(payload.error || 'Could not fetch player balance')
+      err.code = payload.code || null
+      throw err
     }
 
     const userData = payload?.data || {}
@@ -159,6 +178,8 @@ async function fetchPlayerBalance(token, launch) {
     }
   } catch (error) {
     console.error('Player balance fetch failed', error)
+    // Re-throw expiry errors so initAuth can show the right message.
+    if (error.code === 'LAUNCH_TOKEN_EXPIRED') throw error
     return null
   }
 }
@@ -167,17 +188,43 @@ async function initAuth() {
   const queryData = parseAuthQuery()
 
   if (isAuthDataValid(queryData)) {
-    const resolved = await fetchPlayerBalance(queryData.token, queryData.launch)
-    if (resolved) {
-      authSuccess(resolved)
-      return
+    // Fresh token+launch in the URL — always try these first.
+    try {
+      const resolved = await fetchPlayerBalance(queryData.token, queryData.launch)
+      if (resolved) {
+        authSuccess(resolved)
+        return
+      }
+      // Verification returned null (invalid token / unknown error).
+      showNotAllowedScreen()
+    } catch (err) {
+      // fetchPlayerBalance throws for LAUNCH_TOKEN_EXPIRED — show the right message.
+      showNotAllowedScreen(err.code || null)
     }
+    // In all failure cases, do NOT fall back to a stale stored session.
+    // That would replay an expired token and cause an infinite retry loop.
+    return
   }
 
+  // No URL params — try a previously-stored session for the same token pair.
   const stored = getStoredAuth(queryData)
   if (stored && isAuthDataValid(stored)) {
-    authSuccess(stored)
-    return
+    // Verify the stored session is still live before accepting it.
+    try {
+      const verified = await fetchPlayerBalance(stored.token, stored.launch)
+      if (verified) {
+        authSuccess(verified)
+        return
+      }
+    } catch { /* expired or invalid — fall through to clear & show error */ }
+
+    // Stored session is expired or invalid; clear it so we don't loop.
+    try {
+      const key = buildAuthStorageKey(stored)
+      localStorage.removeItem(key)
+      localStorage.removeItem('xo_auth_current')
+      sessionStorage.removeItem('xo_auth_current')
+    } catch { /* ignore */ }
   }
 
   showNotAllowedScreen()
