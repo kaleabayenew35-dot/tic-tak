@@ -10,7 +10,7 @@ import { initTelegram, populateTelegramUser, tgHaptic, initBackButton } from './
 import { initErrorBoundary }    from './modules/errorBoundary.js';
 import { initConnectionMonitor } from './modules/connection.js';
 import { initAutoLogout }        from './modules/autoLogout.js';
-import { fetchAiConfig, API_URL } from './modules/api.js';
+import { fetchAiConfig, fetchBots, API_URL } from './modules/api.js';
 import { applyAuthData, getCurrentUsername, normalizeUsername, getOpponentNameFromMatch as _getOppName } from './modules/helpers.js';
 import {
   showLoadingOverlay, hideLoadingOverlay,
@@ -57,7 +57,92 @@ try {
   aiEnabled  = Boolean(cfg?.ai_enabled);
 } catch { aiEnabled = false; }
 setState('aiEnabled', aiEnabled);
-if (!aiEnabled) document.querySelector('.ai-btn')?.remove();
+
+// Hide the vs AI button when disabled — use hidden class, not DOM removal,
+// so the sidebar divider layout doesn't shift unexpectedly.
+const _aiBtn = document.getElementById('playAiSidebar');
+if (_aiBtn) _aiBtn.classList.toggle('hidden', !aiEnabled);
+
+// ── 2b. AI modal helpers ──────────────────────────────────────
+function _escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function _pctToTier(pct) {
+  if (pct <= 20) return { label: 'Very Easy', cls: 'bot-diff-veryeasy', color: '#4cde80' };
+  if (pct <= 40) return { label: 'Easy',      cls: 'bot-diff-easy',     color: '#7ded9a' };
+  if (pct <= 60) return { label: 'Normal',    cls: 'bot-diff-medium',   color: '#f0c94a' };
+  if (pct <= 80) return { label: 'Hard',      cls: 'bot-diff-hard',     color: '#f39c12' };
+  return               { label: 'Very Hard',  cls: 'bot-diff-veryhard', color: '#e74c3c' };
+}
+
+function _renderBotsList(bots) {
+  const container = document.getElementById('aiBotList');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (!bots || bots.length === 0) {
+    container.innerHTML = '<div class="ai-bot-list-loading">No AI bots available.</div>';
+    return;
+  }
+
+  const sorted = [...bots].sort((a, b) => (a.difficulty ?? a.pct ?? 50) - (b.difficulty ?? b.pct ?? 50));
+
+  sorted.forEach(bot => {
+    const pct  = bot.difficulty ?? bot.pct ?? 50;
+    const tier = _pctToTier(pct);
+    const row  = document.createElement('div');
+    row.className = 'bot-select-row';
+    row.innerHTML = `
+      <div class="bot-select-avatar">🤖</div>
+      <div class="bot-select-info">
+        <div class="bot-select-name">${_escHtml(bot.name)}</div>
+        <div class="bot-select-meta">
+          <span class="bot-diff-badge ${tier.cls}">${tier.label}</span>
+          <div class="bot-diff-bar-wrap">
+            <div class="bot-diff-bar-track">
+              <div class="bot-diff-bar-fill" style="width:${pct}%;background:${tier.color};"></div>
+            </div>
+            <span class="bot-diff-pct" style="color:${tier.color};">${pct}%</span>
+          </div>
+        </div>
+      </div>
+      <div class="bot-select-play">▶</div>`;
+
+    row.addEventListener('click', () => {
+      _closeAiModal();
+      tgHaptic('medium');
+      showGameScreen(true, bot.name);
+    });
+    container.appendChild(row);
+  });
+}
+
+function _closeAiModal() {
+  const modal = document.getElementById('aiModal');
+  if (!modal) return;
+  modal.classList.remove('modal-show');
+  setTimeout(() => modal.classList.add('hidden'), 300);
+}
+
+async function openAiModal() {
+  if (!getState('aiEnabled')) return;
+  const modal     = document.getElementById('aiModal');
+  const container = document.getElementById('aiBotList');
+  if (!modal || !container) return;
+
+  modal.classList.remove('hidden');
+  setTimeout(() => modal.classList.add('modal-show'), 10);
+  container.innerHTML = '<div class="ai-bot-list-loading">Loading bots…</div>';
+
+  try {
+    const res  = await fetchBots();
+    const bots = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+    _renderBotsList(bots);
+  } catch {
+    container.innerHTML = '<div class="ai-bot-list-loading" style="color:#e74c3c">Failed to load bots. Please try again.</div>';
+  }
+}
 
 // ── 3. Bet display ────────────────────────────────────────────
 function updateBetDisplay() {
@@ -134,7 +219,7 @@ function bindListeners() {
 
   playAiSidebar?.addEventListener('click', () => {
     if (!getState('aiEnabled')) return;
-    showGameScreen(true);
+    openAiModal();
   });
 
   backButton?.addEventListener('click', async () => {
@@ -216,6 +301,12 @@ function bindListeners() {
       const m = document.getElementById('historyModal');
       m.classList.remove('modal-show'); setTimeout(() => m.classList.add('hidden'), 300);
     }
+  });
+
+  // AI modal close
+  document.getElementById('aiModalCloseBtn')?.addEventListener('click', _closeAiModal);
+  document.getElementById('aiModal')?.addEventListener('click', e => {
+    if (e.target.id === 'aiModal') _closeAiModal();
   });
 
   // Balance refresh

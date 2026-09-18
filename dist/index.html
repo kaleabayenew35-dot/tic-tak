@@ -13,8 +13,8 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <script type="module" crossorigin src="/assets/index-DN4TQrLf.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DdnK3obG.css">
+  <script type="module" crossorigin src="/assets/index-hl-mCm3W.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DC8CfLlR.css">
 </head>
 <body>
 
@@ -266,6 +266,22 @@
       <div class="invite-modal-actions">
         <button class="btn-primary" id="inviteAcceptButton"  type="button">✅ Accept</button>
         <button class="btn-ghost"   id="inviteDeclineButton" type="button">✕ Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       AI OPPONENT SELECTOR MODAL
+  ══════════════════════════════════════════ -->
+  <div id="aiModal" class="modal-overlay hidden">
+    <div class="modal-box ai-modal-box">
+      <div class="modal-header">
+        <span class="modal-title">🤖 Choose AI Opponent</span>
+        <button class="modal-close" id="aiModalCloseBtn">✕</button>
+      </div>
+      <p class="ai-modal-sub">Select a difficulty to play against</p>
+      <div id="aiBotList" class="ai-bot-list">
+        <!-- Filled dynamically -->
       </div>
     </div>
   </div>

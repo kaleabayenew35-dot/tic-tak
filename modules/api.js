@@ -32,6 +32,7 @@ async function fetchJson(url, options = {}) {
 
 export const fetchStatus    = () => fetchJson(`${API_URL}/api/status`,    { cache: 'no-store' });
 export const fetchAiConfig  = () => fetchJson(`${API_URL}/api/ai/config`, { cache: 'no-store' });
+export const fetchBots      = () => fetchJson(`${API_URL}/api/bots`);
 export const fetchPlayers   = () => fetchJson(`${API_URL}/api/players`);
 
 export const fetchLiveChallenges = () => fetchJson(`${API_URL}/api/live/challenges`);
