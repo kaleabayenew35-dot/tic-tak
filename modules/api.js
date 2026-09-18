@@ -4,9 +4,16 @@
 
 const _fallback = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://localhost:5000'
-  : 'https://xo-backend-lzj0.onrender.com';
+  : 'https://tic-tak-backend.onrender.com';
 
-export const API_URL = (window.__XO_BACKEND_URL__ || _fallback).replace(/\/$/, '');
+export const API_URL = (
+  // 1. Injected by Vite at build time from .env VITE_API_BASE_URL
+  import.meta.env?.VITE_API_BASE_URL?.replace(/\/+$/, '') ||
+  // 2. Runtime override set by the server/CDN (e.g. window.__XO_BACKEND_URL__)
+  window.__XO_BACKEND_URL__?.replace(/\/+$/, '') ||
+  // 3. Hard fallback
+  _fallback
+);
 
 async function fetchJson(url, options = {}) {
   const response = await fetch(url, options);
