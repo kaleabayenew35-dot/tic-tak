@@ -1,63 +1,69 @@
-import { topbarName, topbarBalance, avatarEl } from './dom.js'
-import { appState } from './state.js'
+/* ═══════════════════════════════════════════════════
+   modules/helpers.js — Pure utility functions.
+═══════════════════════════════════════════════════ */
+
+import { getState } from './state.js';
 
 export function formatBalance(value) {
-  const number = Number(String(value).replace(/[^0-9.\-\.]/g, ''))
-  if (Number.isFinite(number)) return number.toLocaleString(undefined, { maximumFractionDigits: 2 })
-  return String(value)
-}
-
-export function applyAuthData(data) {
-  if (!data) return
-  topbarName.textContent = formatUsername(data.username || '@player')
-  topbarBalance.textContent = '💰 ' + formatBalance(data.balance) + ' ETB'
-  avatarEl.textContent = (data.username || 'X').trim().charAt(0).toUpperCase() || 'X'
+  const n = Number(String(value).replace(/[^0-9.\-]/g, ''));
+  if (Number.isFinite(n)) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  return String(value);
 }
 
 export function formatUsername(value) {
-  const raw = String(value || '').trim()
-  return raw.startsWith('@') ? raw : `@${raw}`
+  const raw = String(value || '').trim();
+  return raw.startsWith('@') ? raw : `@${raw}`;
 }
 
 export function normalizeUsername(value) {
-  return String(value || '').trim().replace(/^@/, '').toLowerCase()
+  return String(value || '').trim().replace(/^@/, '').toLowerCase();
 }
 
 export function getCurrentUserProfile() {
-  if (appState.currentUserProfile) return appState.currentUserProfile
-  const authUsername = window.authData?.username || ME.username
-  const parsedBalance = Number.isFinite(Number(window.authData?.balance)) ? Number(window.authData.balance) : null
-  appState.currentUserProfile = {
-    id: Number(window.authData?.id || 0),
-    username: formatUsername(authUsername),
-    initials: String(authUsername || 'P').replace(/^@/, '').slice(0, 2).toUpperCase(),
+  const st = getState('currentUserProfile');
+  if (st) return st;
+
+  const raw      = window.XO_USERNAME || window.tgUserName || 'player';
+  const balance  = Number.isFinite(Number(window.XO_BALANCE)) ? Number(window.XO_BALANCE) : null;
+
+  const profile = {
+    username: formatUsername(raw),
+    initials: String(raw).replace(/^@/, '').slice(0, 2).toUpperCase() || 'X',
     colorClass: 'me',
     status: 'online',
-    balance: parsedBalance,
-  }
-  return appState.currentUserProfile
+    balance,
+  };
+
+  // cache it
+  import('./state.js').then(m => m.setState('currentUserProfile', profile)).catch(() => {});
+  return profile;
 }
 
 export function getCurrentUsername() {
-  return formatUsername(getCurrentUserProfile().username)
+  return formatUsername(getCurrentUserProfile().username);
+}
+
+export function applyAuthData(data) {
+  if (!data) return;
+  const nameEl    = document.querySelector('.topbar-name');
+  const balEl     = document.querySelector('.topbar-balance');
+  const avatarEl  = document.querySelector('.avatar');
+  if (nameEl)   nameEl.textContent   = formatUsername(data.username || 'player');
+  if (balEl)    balEl.textContent    = '💰 ' + formatBalance(data.balance) + ' ETB';
+  if (avatarEl) avatarEl.textContent = String(data.username || 'X').replace(/^@/, '').charAt(0).toUpperCase();
 }
 
 export function parseMatchMoves(match) {
-  if (!match) return []
+  if (!match) return [];
   try {
-    return typeof match.moves === 'string' && match.moves
-      ? JSON.parse(match.moves)
-      : (match.moves || [])
-  } catch (error) {
-    console.error('[parseMatchMoves] could not parse moves:', error, 'match:', match)
-    return []
-  }
+    return typeof match.moves === 'string' && match.moves ? JSON.parse(match.moves) : (match.moves || []);
+  } catch { return []; }
 }
 
 export function getOpponentNameFromMatch(match) {
-  if (!match) return 'Opponent'
-  const currentUser = normalizeUsername(getCurrentUsername())
-  return normalizeUsername(match.player_x_username) === currentUser
+  if (!match) return 'Opponent';
+  const me = normalizeUsername(getCurrentUsername());
+  return normalizeUsername(match.player_x_username) === me
     ? match.player_o_username
-    : match.player_x_username
+    : match.player_x_username;
 }

@@ -1,54 +1,72 @@
-export const dashboardScreen = document.getElementById('dashboardScreen')
-export const gameScreen = document.getElementById('gameScreen')
-export const backButton = document.getElementById('backButton')
-export const resetButton = document.getElementById('resetButton')
-export const cells = Array.from(document.querySelectorAll('.cell'))
-export const statusText = document.getElementById('statusText')
-export const turnIndicator = document.getElementById('turnIndicator')
-export const turnDot = turnIndicator?.querySelector('.turn-dot')
-export const playerXEl = document.getElementById('playerX')
-export const playerOEl = document.getElementById('playerO')
-export const scoreXEl = document.getElementById('scoreX')
-export const scoreOEl = document.getElementById('scoreO')
-export const opponentNameEl = document.getElementById('opponentName')
-export const resultOverlay = document.getElementById('resultOverlay')
-export const resultMessage = document.getElementById('resultMessage')
-export const resultEmoji = document.getElementById('resultEmoji')
-export const resultSub = document.getElementById('resultSub')
-export const resultBetAmount = document.getElementById('resultBetAmount')
-export const resultBetOutcome = document.getElementById('resultBetOutcome')
-export const resultBetRow = document.getElementById('resultBetRow')
-export const closeModalButton = document.getElementById('closeModalButton')
-export const modalHomeButton = document.getElementById('modalHomeButton')
-export const inviteModalOverlay = document.getElementById('inviteModalOverlay')
-export const inviteModalTitle = document.getElementById('inviteModalTitle')
-export const inviteModalMessage = document.getElementById('inviteModalMessage')
-export const inviteAcceptButton = document.getElementById('inviteAcceptButton')
-export const inviteDeclineButton = document.getElementById('inviteDeclineButton')
-export const inviteModalAvatar = document.getElementById('inviteModalAvatar')
-export const inviteModalBet = document.getElementById('inviteModalBet')
-export const sidebar = document.getElementById('sidebar')
-export const sidebarToggle = document.getElementById('sidebarToggle')
-export const sidebarClose = document.getElementById('sidebarClose')
-export const sidebarOverlay = document.getElementById('sidebarOverlay')
-export const topbarName = document.querySelector('.topbar-name')
-export const topbarBalance = document.querySelector('.topbar-balance')
-export const avatarEl = document.querySelector('.avatar')
-export const betDisplay = document.getElementById('betDisplay')
-export const betChips = document.getElementById('betChips')
-export const betSelectedTag = document.getElementById('betSelectedTag')
-export const onlineCount = document.getElementById('onlineCount')
-export const playerList = document.getElementById('playerList')
-export const loadingOverlay = document.getElementById('loadingOverlay')
-export const loadingOverlayText = document.getElementById('loadingOverlayText')
-export const connectionBanner = document.getElementById('connectionBanner')
-export const connectionBannerText = document.getElementById('connectionBannerText')
-export const connectionRetryButton = document.getElementById('connectionRetryButton')
-export const selectedBanner = document.getElementById('selectedBanner')
-export const sbAvatar = document.getElementById('sbAvatar')
-export const sbUsername = document.getElementById('sbUsername')
-export const sbStatusTxt = document.getElementById('sbStatusTxt')
-export const sbBetTag = document.getElementById('sbBetTag')
-export const sbCancelBtn = document.getElementById('sbCancelBtn')
-export const playAiSidebar = document.getElementById('playAiSidebar')
-export const confettiWrap = document.getElementById('confettiWrap')
+/* ═══════════════════════════════════════════════════
+   modules/dom.js — All DOM element references.
+═══════════════════════════════════════════════════ */
+
+export const dashboardScreen     = document.getElementById('dashboardScreen');
+export const gameScreen          = document.getElementById('gameScreen');
+export const backButton          = document.getElementById('backButton');
+export const resetButton         = document.getElementById('resetButton');
+export const cells               = Array.from(document.querySelectorAll('.cell'));
+export const statusText          = document.getElementById('statusText');
+export const turnIndicator       = document.getElementById('turnIndicator');
+export const turnDot             = turnIndicator?.querySelector('.turn-dot');
+export const playerXEl           = document.getElementById('playerX');
+export const playerOEl           = document.getElementById('playerO');
+export const scoreXEl            = document.getElementById('scoreX');
+export const scoreOEl            = document.getElementById('scoreO');
+export const opponentNameEl      = document.getElementById('opponentName');
+
+// Result modal
+export const resultOverlay       = document.getElementById('resultOverlay');
+export const resultMessage       = document.getElementById('resultMessage');
+export const resultEmoji         = document.getElementById('resultEmoji');
+export const resultSub           = document.getElementById('resultSub');
+export const resultBetAmount     = document.getElementById('resultBetAmount');
+export const resultBetOutcome    = document.getElementById('resultBetOutcome');
+export const resultBetRow        = document.getElementById('resultBetRow');
+export const closeModalButton    = document.getElementById('closeModalButton');
+export const modalHomeButton     = document.getElementById('modalHomeButton');
+export const confettiWrap        = document.getElementById('confettiWrap');
+
+// Invite modal
+export const inviteModalOverlay  = document.getElementById('inviteModalOverlay');
+export const inviteModalTitle    = document.getElementById('inviteModalTitle');
+export const inviteModalMessage  = document.getElementById('inviteModalMessage');
+export const inviteAcceptButton  = document.getElementById('inviteAcceptButton');
+export const inviteDeclineButton = document.getElementById('inviteDeclineButton');
+export const inviteModalAvatar   = document.getElementById('inviteModalAvatar');
+export const inviteModalBet      = document.getElementById('inviteModalBet');
+
+// Sidebar
+export const sidebar             = document.getElementById('sidebar');
+export const sidebarToggle       = document.getElementById('sidebarToggle');
+export const sidebarClose        = document.getElementById('sidebarClose');
+export const sidebarOverlay      = document.getElementById('sidebarOverlay');
+export const playAiSidebar       = document.getElementById('playAiSidebar');
+
+// Topbar
+export const topbarName          = document.querySelector('.topbar-name');
+export const topbarBalance       = document.querySelector('.topbar-balance');
+export const avatarEl            = document.querySelector('.avatar');
+
+// Bet bar
+export const betDisplay          = document.getElementById('betDisplay');
+export const betChips            = document.getElementById('betChips');
+export const betSelectedTag      = document.getElementById('betSelectedTag');
+
+// Player list + selection
+export const onlineCount         = document.getElementById('onlineCount');
+export const playerList          = document.getElementById('playerList');
+export const selectedBanner      = document.getElementById('selectedBanner');
+export const sbAvatar            = document.getElementById('sbAvatar');
+export const sbUsername          = document.getElementById('sbUsername');
+export const sbStatusTxt         = document.getElementById('sbStatusTxt');
+export const sbBetTag            = document.getElementById('sbBetTag');
+export const sbCancelBtn         = document.getElementById('sbCancelBtn');
+
+// Loading / connection
+export const loadingOverlay      = document.getElementById('loadingOverlay');
+export const loadingOverlayText  = document.getElementById('loadingOverlayText');
+export const connectionBanner    = document.getElementById('connectionBanner');
+export const connectionBannerText = document.getElementById('connectionBannerText');
+export const connectionRetryButton = document.getElementById('connectionRetryButton');
