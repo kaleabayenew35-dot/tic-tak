@@ -489,6 +489,8 @@ initLoader(() => {
 
     showLoadingOverlay('Loading app…');
     startLivePolling({
+      onSelectPlayer,
+      onCancelSelection,
       onChallengeReceived: c  => showInviteModal(c),
       onChallengeSent:     c  => {
         if (sbStatusTxt) sbStatusTxt.textContent = `Challenge sent ✓ — waiting for @${(c.opponent_username||'').replace(/^@/,'')} to accept…`;
