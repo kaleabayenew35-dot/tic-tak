@@ -4,12 +4,13 @@
 
 import { getState, setState, gameState, clearActiveMatchId } from './state.js';
 import { getCurrentUsername, normalizeUsername, formatUsername, parseMatchMoves, getOpponentNameFromMatch } from './helpers.js';
-import { showModal, hideModal, closeSidebar, hideInviteModal } from './ui.js';
+import { showModal, hideModal, closeSidebar, hideInviteModal, renderPlayers, updateOnlineCount } from './ui.js';
 import { refreshBalance } from './urlAuth.js';
 import {
   dashboardScreen, gameScreen, cells, statusText, turnDot,
   playerXEl, playerOEl, scoreXEl, scoreOEl, opponentNameEl,
   closeModalButton, modalHomeButton, selectedBanner,
+  betDisplay, betChips, betSelectedTag,
 } from './dom.js';
 import { submitMatchMove, fetchPlayerStats } from './api.js';
 
@@ -296,9 +297,18 @@ export function showDashboard() {
   dashboardScreen?.classList.remove('hidden');
   document.body.classList.remove('game-active');
   document.body.style.overflow = '';
+  setState('betAmount', 0);
   setState('selectedPlayer', null);
   setState('currentUserProfile', null);
   selectedBanner?.classList.add('hidden');
+  betChips?.querySelectorAll('.bet-chip').forEach(chip => chip.classList.remove('active'));
+  betDisplay?.classList.add('unselected');
+  const betValue = betDisplay?.querySelector('.bet-balance-value');
+  if (betValue) betValue.textContent = 'Pick amount';
+  betSelectedTag?.classList.add('hidden');
+  setState('onlinePlayers', []);
+  renderPlayers();
+  updateOnlineCount();
   clearActiveMatchId();
   setState('matchViewOpen', false);
   hideModal();
