@@ -22,6 +22,7 @@ export const resultMessage       = document.getElementById('resultMessage');
 export const resultEmoji         = document.getElementById('resultEmoji');
 export const resultSub           = document.getElementById('resultSub');
 export const resultBetAmount     = document.getElementById('resultBetAmount');
+export const resultBetLabel      = document.getElementById('resultBetLabel');
 export const resultBetOutcome    = document.getElementById('resultBetOutcome');
 export const resultBetRow        = document.getElementById('resultBetRow');
 export const resultCloseButton   = document.getElementById('resultCloseButton');

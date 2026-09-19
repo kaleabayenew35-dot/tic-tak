@@ -12,6 +12,7 @@ import {
   inviteAcceptButton, inviteDeclineButton, inviteModalAvatar, inviteModalBet,
   resultOverlay, resultEmoji, resultMessage, resultSub,
   resultBetAmount, resultBetOutcome, resultBetRow, confettiWrap,
+  resultBetLabel,
   closeModalButton, modalHomeButton,
 } from './dom.js';
 
@@ -221,9 +222,16 @@ export function showModal(
   if (betAmount > 0) {
     resultBetAmount.textContent  = '₿ ' + betAmount + ' ETB';
     resultBetOutcome.textContent = outcome;
-    resultBetOutcome.className   = `result-bet-outcome outcome-${outcomeTone}`;
+    resultBetLabel.textContent = outcomeTone === 'win'
+      ? '🏆 You Win'
+      : outcomeTone === 'lose'
+        ? '💸 You Lost'
+        : '🤝 Draw — Partial Refund';
+    resultBetRow.className = `result-bet-row outcome-${outcomeTone}`;
+    resultBetOutcome.className = `result-bet-outcome outcome-${outcomeTone}`;
     resultBetRow.classList.remove('hidden');
   } else {
+    resultBetRow.className = 'result-bet-row hidden';
     resultBetRow.classList.add('hidden');
   }
 
