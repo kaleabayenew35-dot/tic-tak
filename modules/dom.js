@@ -24,6 +24,7 @@ export const resultSub           = document.getElementById('resultSub');
 export const resultBetAmount     = document.getElementById('resultBetAmount');
 export const resultBetOutcome    = document.getElementById('resultBetOutcome');
 export const resultBetRow        = document.getElementById('resultBetRow');
+export const resultCloseButton   = document.getElementById('resultCloseButton');
 export const closeModalButton    = document.getElementById('closeModalButton');
 export const modalHomeButton     = document.getElementById('modalHomeButton');
 export const confettiWrap        = document.getElementById('confettiWrap');

@@ -32,6 +32,7 @@ import { saveSelectedBet } from './modules/api.js';
 import {
   backButton, resetButton, cells,
   closeModalButton, modalHomeButton,
+  resultCloseButton,
   inviteAcceptButton, inviteDeclineButton,
   betChips, sbCancelBtn, sidebarToggle, sidebarClose, sidebarOverlay,
   playAiSidebar, connectionRetryButton,
@@ -284,6 +285,13 @@ function bindListeners() {
     if (rematchOpp && !rematchInProgress) { await startPlayAgain(); return; }
     hideModal(); startNewGame();
   });
+
+  resultCloseButton?.addEventListener('click', () => {
+    hideModal();
+    showDashboard();
+  });
+
+  window.addEventListener('xo-result-auto-close', () => showDashboard());
 
   modalHomeButton?.addEventListener('click', () => {
     setState('rematchOpponentName', null);

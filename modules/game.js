@@ -320,12 +320,14 @@ export function showResultModalForMatch(match) {
   const drawRefund   = Math.round((wager - eachFee) * 100) / 100;
 
   let emoji, title, sub, outcome;
+  let outcomeTone;
 
   if (isDraw) {
     emoji   = '🤝';
     title   = "It's a Draw!";
     sub     = 'Neck and neck — no winner this round.';
-    outcome = wager > 0 ? `Refund: +${drawRefund} ETB` : '±0 ETB';
+    outcome = wager > 0 ? `+${drawRefund} ETB refund` : '±0 ETB';
+    outcomeTone = 'draw';
     // Update balance display immediately
     if (wager > 0) {
       const cur = Number(window.XO_BALANCE ?? 0);
@@ -339,6 +341,7 @@ export function showResultModalForMatch(match) {
     title   = 'You Win!';
     sub     = 'Outstanding move!';
     outcome = wager > 0 ? `+${winnerPayout} ETB` : '+0 ETB';
+    outcomeTone = 'win';
     // Update balance display immediately
     if (wager > 0) {
       const cur = Number(window.XO_BALANCE ?? 0);
@@ -352,10 +355,11 @@ export function showResultModalForMatch(match) {
     title   = 'You Lose';
     sub     = 'Better luck next round!';
     outcome = wager > 0 ? `−${wager} ETB` : '−0 ETB';
+    outcomeTone = 'lose';
     // Balance was already deducted at challenge accept — no change needed
   }
 
-  showModal(emoji, title, sub, outcome);
+  showModal(emoji, title, sub, outcome, wager, outcomeTone);
 
   // Confirm real balance from server after a short delay
   setTimeout(() => refreshBalance(true), 1500);

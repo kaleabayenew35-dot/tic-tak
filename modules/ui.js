@@ -168,7 +168,48 @@ export function hideInviteModal() {
 }
 
 // ── Result modal ──────────────────────────────────────────────
-export function showModal(emoji, title, sub, outcome) {
+let resultAutoCloseTimer = null;
+let resultCountdownTimer = null;
+
+function clearResultTimers() {
+  if (resultAutoCloseTimer) clearTimeout(resultAutoCloseTimer);
+  if (resultCountdownTimer) clearInterval(resultCountdownTimer);
+  resultAutoCloseTimer = null;
+  resultCountdownTimer = null;
+}
+
+function startResultCountdown() {
+  const text = document.getElementById('resultCountdownText');
+  const bar = document.getElementById('resultCountdownBar');
+  let seconds = 3;
+
+  if (text) text.textContent = `Closing in ${seconds}s`;
+  if (bar) {
+    bar.classList.remove('running');
+    void bar.offsetWidth;
+    bar.classList.add('running');
+  }
+
+  resultCountdownTimer = setInterval(() => {
+    seconds -= 1;
+    if (text) text.textContent = seconds > 0 ? `Closing in ${seconds}s` : 'Closing…';
+  }, 1000);
+  resultAutoCloseTimer = setTimeout(() => {
+    clearResultTimers();
+    hideModal();
+    window.dispatchEvent(new CustomEvent('xo-result-auto-close'));
+  }, 3000);
+}
+
+export function showModal(
+  emoji,
+  title,
+  sub,
+  outcome,
+  wagerAmount = getState('betAmount'),
+  outcomeTone = outcome?.startsWith('+') ? 'win' : outcome?.startsWith('−') ? 'lose' : 'draw',
+) {
+  clearResultTimers();
   if (!resultOverlay) return;
   resultEmoji.textContent    = emoji;
   resultMessage.textContent  = title;
@@ -176,12 +217,11 @@ export function showModal(emoji, title, sub, outcome) {
   if (closeModalButton) closeModalButton.textContent = '▶ Play Again';
   if (modalHomeButton)  modalHomeButton.textContent  = '⌂ Menu';
 
-  const betAmount = getState('betAmount');
-  if (betAmount) {
-    resultBetAmount.textContent  = '₿ ' + betAmount;
+  const betAmount = Number(wagerAmount) || 0;
+  if (betAmount > 0) {
+    resultBetAmount.textContent  = '₿ ' + betAmount + ' ETB';
     resultBetOutcome.textContent = outcome;
-    resultBetOutcome.className   = 'result-bet-outcome ' +
-      (outcome.startsWith('+') ? 'outcome-win' : outcome.startsWith('−') ? 'outcome-lose' : 'outcome-draw');
+    resultBetOutcome.className   = `result-bet-outcome outcome-${outcomeTone}`;
     resultBetRow.classList.remove('hidden');
   } else {
     resultBetRow.classList.add('hidden');
@@ -201,8 +241,10 @@ export function showModal(emoji, title, sub, outcome) {
   }
 
   resultOverlay.classList.remove('hidden');
+  startResultCountdown();
 }
 export function hideModal() {
+  clearResultTimers();
   resultOverlay?.classList.add('hidden');
 }
 

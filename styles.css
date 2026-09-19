@@ -471,6 +471,8 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   position:relative; overflow:hidden; text-align:center;
   animation:resultPop .4s cubic-bezier(.34,1.56,.64,1);
 }
+.result-close { position:absolute; top:10px; right:10px; width:30px; height:30px; border:1px solid rgba(255,255,255,.15); border-radius:50%; background:rgba(255,255,255,.06); color:var(--text-muted); cursor:pointer; font-size:.85rem; line-height:1; }
+.result-close:active { transform:scale(.9); }
 @keyframes resultPop { from{opacity:0;transform:scale(.7)} to{opacity:1;transform:scale(1)} }
 .confetti-wrap { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
 .confetti-dot { position:absolute; border-radius:50%; animation:confettiFall .9s ease-out forwards; }
@@ -485,6 +487,11 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .outcome-win  { color:var(--green); }
 .outcome-lose { color:var(--red-light); }
 .outcome-draw { color:var(--gold); }
+.result-countdown { display:flex; flex-direction:column; gap:5px; width:100%; margin-top:2px; color:var(--text-muted); font-size:.62rem; }
+.result-countdown-track { display:block; width:100%; height:3px; overflow:hidden; border-radius:99px; background:rgba(255,255,255,.12); }
+.result-countdown-bar { display:block; width:100%; height:100%; transform-origin:left; background:var(--gold); }
+.result-countdown-bar.running { animation:resultCountdown 3s linear forwards; }
+@keyframes resultCountdown { from { transform:scaleX(1); } to { transform:scaleX(0); } }
 .result-actions { display:flex; gap:8px; width:100%; margin-top:4px; }
 .btn-primary {
   flex:1; padding:12px 14px; border-radius:13px; border:none;
