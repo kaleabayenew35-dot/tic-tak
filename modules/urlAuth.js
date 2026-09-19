@@ -78,6 +78,9 @@ function showExpiredOverlay() {
     'gap:18px','padding:32px 24px','text-align:center',
   ].join(';');
 
+  // Read current params for the refresh call
+  const curParams = readParams();
+
   overlay.innerHTML = `
     <style>
       @keyframes expiredPulse{0%,100%{transform:scale(1)}50%{transform:scale(.92)}}
@@ -88,29 +91,53 @@ function showExpiredOverlay() {
       Session Expired
     </div>
     <div style="color:rgba(245,230,200,.75);font-size:.9rem;max-width:300px;line-height:1.65;">
-      Your game session has expired.<br>
-      Go back to Telegram and tap <strong>Play</strong> again to get a fresh link.
+      Your session has expired. Tap below to get a fresh link and continue.
     </div>
-    <button id="expiredBackBtn" style="
+    <button id="reloadGameBtn" style="
       background:linear-gradient(135deg,#a07810,#d4a017);color:#1a1005;
       border:none;border-radius:999px;padding:13px 32px;
       font-weight:800;cursor:pointer;font-family:inherit;font-size:.95rem;
       box-shadow:0 4px 14px rgba(212,160,23,.35);margin-top:4px;">
-      ← Back to Telegram
-    </button>`;
+      🔄 Reload Game
+    </button>
+    <div id="reloadStatus" style="font-size:.75rem;color:rgba(245,230,200,.45);min-height:1.2em;"></div>`;
 
   const mount = () => {
     const loader = document.getElementById('loader');
     if (loader) loader.style.display = 'none';
     document.body.appendChild(overlay);
 
-    document.getElementById('expiredBackBtn')?.addEventListener('click', () => {
-      if (window.Telegram?.WebApp?.close) {
-        window.Telegram.WebApp.close();
-      } else {
-        // Outside Telegram — just clear params so a fresh link can be used
-        window.history.replaceState({}, '', window.location.pathname);
-        window.location.reload();
+    document.getElementById('reloadGameBtn')?.addEventListener('click', async () => {
+      const btn    = document.getElementById('reloadGameBtn');
+      const status = document.getElementById('reloadStatus');
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Getting fresh link…'; }
+
+      try {
+        const SYSTEM_BACKEND = 'https://system-backend-1u5m.onrender.com';
+        const res = await fetch(`${SYSTEM_BACKEND}/api/admin/games/game-tokens/refresh-launch`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({
+            token:    curParams?.token || '',
+            username: window.XO_USERNAME || '',
+            balance:  window.XO_BALANCE  ?? 0,
+          }),
+        });
+        const json = await res.json();
+        if (res.ok && json.launch) {
+          const url = new URL(window.location.href);
+          url.searchParams.set('token',  json.token);
+          url.searchParams.set('launch', json.launch);
+          window.location.href = url.toString();
+        } else {
+          throw new Error(json.error || 'Failed to refresh');
+        }
+      } catch (e) {
+        if (status) status.textContent = 'Could not refresh. Please go back to Telegram.';
+        if (btn) { btn.disabled = false; btn.textContent = '🔄 Reload Game'; }
+        setTimeout(() => {
+          if (window.Telegram?.WebApp?.close) window.Telegram.WebApp.close();
+        }, 2000);
       }
     });
   };
