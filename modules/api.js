@@ -33,7 +33,14 @@ async function fetchJson(url, options = {}) {
 export const fetchStatus    = () => fetchJson(`${API_URL}/api/status`,    { cache: 'no-store' });
 export const fetchAiConfig  = () => fetchJson(`${API_URL}/api/ai/config`, { cache: 'no-store' });
 export const fetchBots      = () => fetchJson(`${API_URL}/api/bots`);
-export const fetchPlayers   = () => fetchJson(`${API_URL}/api/players`);
+export const fetchPlayers = (betAmount) => {
+  // When a bet amount is given, only return players with that exact bet selected.
+  // This is enforced server-side — no client-side filtering needed.
+  if (betAmount && Number(betAmount) > 0) {
+    return fetchJson(`${API_URL}/api/players?bet=${encodeURIComponent(betAmount)}`);
+  }
+  return fetchJson(`${API_URL}/api/players`);
+};
 
 export const fetchLiveChallenges = () => fetchJson(`${API_URL}/api/live/challenges`);
 export const fetchLiveMatches    = () => fetchJson(`${API_URL}/api/live/matches`);

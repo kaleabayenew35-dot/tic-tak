@@ -32,8 +32,9 @@ export async function registerOnlineUser() {
 
 // ── Load players ──────────────────────────────────────────────
 export async function loadPlayers(callbacks = {}) {
+  const betAmount = getState('betAmount');
   try {
-    const data = await fetchPlayers();
+    const data = await fetchPlayers(betAmount);
     setState('onlinePlayers',
       Array.isArray(data) ? data.filter(p => (p.status || 'online') !== 'offline') : []
     );

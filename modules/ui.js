@@ -52,37 +52,29 @@ export function renderPlayers({ onSelectPlayer, onCancelSelection } = {}) {
   const rows        = [];
   const me          = normalizeUsername(getCurrentUsername());
   const betAmount   = getState('betAmount');
+  // onlinePlayers already filtered by bet server-side when betAmount > 0
   const allPlayers  = getState('onlinePlayers');
   const selected    = getState('selectedPlayer');
 
-  const visible = allPlayers
-    .filter(p => normalizeUsername(p.username) !== me)
-    .sort((a, b) => Number(b.wins || 0) - Number(a.wins || 0));
-
-  // Only show players who have the same bet selected — or all online if no bet yet
-  const matching = betAmount
-    ? visible.filter(p => {
-        const pb = Number(p.selected_bet_amount ?? p.selectedBetAmount ?? null);
-        return Number.isFinite(pb) && pb > 0 && pb === Number(betAmount);
-      })
-    : [];   // no bet selected → show nothing (bet must be chosen first)
+  // Exclude self from the visible list
+  const visible = allPlayers.filter(p => normalizeUsername(p.username) !== me);
 
   if (betAmount) {
-    // Show "me" row only when bet is selected
     rows.push(_buildMeRow());
   }
 
   if (!betAmount) {
-    // No bet selected — prompt the user instead of showing players
     rows.push('<div class="pl-row"><div class="pl-info"><span class="pl-username" style="color:rgba(245,230,200,.45);">Select a bet amount above to see available players.</span></div></div>');
   } else if (!visible.length) {
-    rows.push('<div class="pl-row"><div class="pl-info"><span class="pl-username">No other players are online right now.</span></div></div>');
-  } else if (!matching.length) {
-    rows.push(`<div class="pl-row"><div class="pl-info"><span class="pl-username">${visible.length} player(s) online — none have selected ${betAmount} ETB yet. Waiting…</span></div></div>`);
+    rows.push(`<div class="pl-row"><div class="pl-info"><span class="pl-username">${
+      getState('onlinePlayers').length > 1
+        ? `Players online — none have selected ${betAmount} ETB yet. Waiting…`
+        : 'No players available at ' + betAmount + ' ETB yet. Waiting…'
+    }</span></div></div>`);
   } else {
     const sorted = selected
-      ? [matching.find(p => Number(p.id) === selected), ...matching.filter(p => Number(p.id) !== selected)].filter(Boolean)
-      : matching;
+      ? [visible.find(p => Number(p.id) === selected), ...visible.filter(p => Number(p.id) !== selected)].filter(Boolean)
+      : visible;
     rows.push(...sorted.map(p => _buildPlayerRow(p)));
   }
 
