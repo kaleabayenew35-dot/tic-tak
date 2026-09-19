@@ -11,16 +11,46 @@ import {
   playerXEl, playerOEl, scoreXEl, scoreOEl, opponentNameEl,
   closeModalButton, modalHomeButton, selectedBanner,
 } from './dom.js';
-import { submitMatchMove } from './api.js';
+import { submitMatchMove, fetchPlayerStats } from './api.js';
 
 // ── Stats ─────────────────────────────────────────────────────
-export function loadStats() {
+export async function loadStats() {
+  const fallback = { wins: 0, draws: 0, losses: 0 };
+
   try {
-    const s = JSON.parse(localStorage.getItem('xo_stats') || '{}');
-    gameState.stats.wins   = s.wins   || 0;
-    gameState.stats.draws  = s.draws  || 0;
-    gameState.stats.losses = s.losses || 0;
-  } catch { gameState.stats = { wins: 0, draws: 0, losses: 0 }; }
+    const user = getCurrentUsername();
+    const normalized = normalizeUsername(user);
+    if (normalized) {
+      const res = await fetchPlayerStats(normalized);
+      const payload = res?.data || res || {};
+
+      if (payload && typeof payload === 'object') {
+        gameState.stats = {
+          wins: Number(payload.wins || 0),
+          draws: Number(payload.draws || 0),
+          losses: Number(payload.losses || 0),
+        };
+      } else {
+        gameState.stats = { ...fallback };
+      }
+    } else {
+      gameState.stats = { ...fallback };
+    }
+  } catch (err) {
+    console.warn('Could not load backend stats; using local cache fallback', err);
+    try {
+      const s = JSON.parse(localStorage.getItem('xo_stats') || '{}');
+      gameState.stats = {
+        wins: Number(s.wins || 0),
+        draws: Number(s.draws || 0),
+        losses: Number(s.losses || 0),
+      };
+    } catch {
+      gameState.stats = { ...fallback };
+    }
+  }
+
+  saveStats();
 }
 export function saveStats() {
   localStorage.setItem('xo_stats', JSON.stringify(gameState.stats));

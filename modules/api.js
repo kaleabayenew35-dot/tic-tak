@@ -42,6 +42,14 @@ export const fetchPlayers = (betAmount) => {
   return fetchJson(`${API_URL}/api/players`);
 };
 
+export const fetchPlayerStats = (username) => {
+  const clean = String(username || '').replace(/^@/, '').trim();
+  if (!clean) {
+    return Promise.resolve({ ok: true, data: { wins: 0, draws: 0, losses: 0 } });
+  }
+  return fetchJson(`${API_URL}/api/stats/player/${encodeURIComponent(clean)}`, { cache: 'no-store' });
+};
+
 export const fetchLiveChallenges = () => fetchJson(`${API_URL}/api/live/challenges`);
 export const fetchLiveMatches    = () => fetchJson(`${API_URL}/api/live/matches`);
 export const fetchMatchById      = (id) => fetchJson(`${API_URL}/api/live/matches/${id}`);

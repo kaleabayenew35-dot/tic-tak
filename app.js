@@ -282,11 +282,15 @@ function bindListeners() {
     const response = await acceptChallenge(invite.id);
     if (response?.match) {
       hideInviteModal();
+      setState('selectedPlayer', null);
+      setState('betAmount', 0);
+      updateBetDisplay();
       const matches = getState('liveMatches').filter(m => m.id !== response.match.id);
       matches.push(response.match);
       setState('liveMatches', matches);
       showGameScreen(false, _getOppName(response.match));
       syncBoardFromMatch(response.match);
+      await loadPlayers({ onSelectPlayer, onCancelSelection });
       await loadLiveChallenges();
     }
   });
@@ -451,9 +455,9 @@ function initLoader(onReady, authReady) {
 
 // ── 10. Main bootstrap ────────────────────────────────────────
 initLoader(() => {
-  populateTelegramUser(() => {
+  populateTelegramUser(async () => {
     syncFromWindow();
-    loadStats();
+    await loadStats();
     renderSidebarStats();
     bindListeners();
     updateConnectionStatus();
@@ -483,18 +487,24 @@ initLoader(() => {
       },
       onChallengeAccepted: async match => {
         hideInviteModal();
+        setState('selectedPlayer', null);
+        setState('betAmount', 0);
+        updateBetDisplay();
         const matches = getState('liveMatches').filter(m => m.id !== match.id);
         matches.push(match);
         setState('liveMatches', matches);
         showGameScreen(false, _getOppName(match));
         syncBoardFromMatch(match);
+        await loadPlayers({ onSelectPlayer, onCancelSelection });
         await loadLiveChallenges();
       },
       onMoveMade: match => {
         if (getState('activeMatchId') && Number(getState('activeMatchId')) === Number(match.id))
           syncBoardFromMatch(match);
       },
-      onMatchFinished: match => {
+      onMatchFinished: async match => {
+        await loadStats();
+        renderSidebarStats();
         if (getState('activeMatchId') && Number(getState('activeMatchId')) === Number(match.id)) {
           const me     = normalizeUsername(getCurrentUsername());
           const isOnGameScreen = !document.getElementById('gameScreen')?.classList.contains('hidden');
