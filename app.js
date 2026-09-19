@@ -196,7 +196,18 @@ function updateBetDisplay() {
 // ── 4. Player selection ───────────────────────────────────────
 async function onSelectPlayer(id) {
   const player = getState('onlinePlayers').find(p => Number(p.id) === Number(id));
-  if (!player) return;
+  if (!player) {
+    console.error('[XO] Play clicked but player was not found in onlinePlayers', {
+      id,
+      onlinePlayers: getState('onlinePlayers'),
+    });
+    return;
+  }
+  console.log('[XO] Play clicked', {
+    playerId: player.id,
+    opponent: player.username,
+    betAmount: getState('betAmount'),
+  });
   setState('selectedPlayer', Number(id));
   if (sbAvatar)    sbAvatar.textContent = (player.username || 'P').replace(/^@/, '').slice(0, 2).toUpperCase();
   if (sbAvatar)    sbAvatar.className   = 'sb-avatar ' + ['p1','p2','p3','p4'][Number(player.id) % 4];
@@ -208,7 +219,12 @@ async function onSelectPlayer(id) {
   renderPlayers({ onSelectPlayer, onCancelSelection });
 
   const result = await createLiveChallenge(fmtOpp);
-  if (!result && sbStatusTxt) sbStatusTxt.textContent = 'Failed to send challenge. Try again.';
+  if (!result) {
+    setState('selectedPlayer', null);
+    selectedBanner?.classList.add('hidden');
+    if (sbStatusTxt) sbStatusTxt.textContent = 'Failed to send challenge. Try again.';
+    renderPlayers({ onSelectPlayer, onCancelSelection });
+  }
 }
 
 async function onCancelSelection() {
