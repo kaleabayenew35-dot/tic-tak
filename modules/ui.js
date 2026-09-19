@@ -59,19 +59,26 @@ export function renderPlayers({ onSelectPlayer, onCancelSelection } = {}) {
     .filter(p => normalizeUsername(p.username) !== me)
     .sort((a, b) => Number(b.wins || 0) - Number(a.wins || 0));
 
+  // Only show players who have the same bet selected — or all online if no bet yet
   const matching = betAmount
     ? visible.filter(p => {
         const pb = Number(p.selected_bet_amount ?? p.selectedBetAmount ?? null);
         return Number.isFinite(pb) && pb > 0 && pb === Number(betAmount);
       })
-    : visible;
+    : [];   // no bet selected → show nothing (bet must be chosen first)
 
-  if (betAmount) rows.push(_buildMeRow());
+  if (betAmount) {
+    // Show "me" row only when bet is selected
+    rows.push(_buildMeRow());
+  }
 
-  if (!visible.length) {
+  if (!betAmount) {
+    // No bet selected — prompt the user instead of showing players
+    rows.push('<div class="pl-row"><div class="pl-info"><span class="pl-username" style="color:rgba(245,230,200,.45);">Select a bet amount above to see available players.</span></div></div>');
+  } else if (!visible.length) {
     rows.push('<div class="pl-row"><div class="pl-info"><span class="pl-username">No other players are online right now.</span></div></div>');
-  } else if (betAmount && !matching.length) {
-    rows.push(`<div class="pl-row"><div class="pl-info"><span class="pl-username">${visible.length} player(s) online — none have selected ${betAmount} ETB yet.</span></div></div>`);
+  } else if (!matching.length) {
+    rows.push(`<div class="pl-row"><div class="pl-info"><span class="pl-username">${visible.length} player(s) online — none have selected ${betAmount} ETB yet. Waiting…</span></div></div>`);
   } else {
     const sorted = selected
       ? [matching.find(p => Number(p.id) === selected), ...matching.filter(p => Number(p.id) !== selected)].filter(Boolean)
@@ -106,9 +113,7 @@ function _buildMeRow() {
 
 function _buildPlayerRow(player) {
   const isSelected  = Number(getState('selectedPlayer')) === Number(player.id);
-  const available   = Number(player.balance || 0);
   const betAmount   = getState('betAmount');
-  const canPlay     = !betAmount || available >= betAmount;
   const initials    = (player.username || 'P').replace(/^@/, '').slice(0, 2).toUpperCase();
   const colorClass  = ['p1', 'p2', 'p3', 'p4'][Number(player.id) % 4];
 
@@ -121,11 +126,8 @@ function _buildPlayerRow(player) {
     btnHtml = `<button class="pl-btn pl-btn-cancel" type="button" data-id="${player.id}">✕ Cancel</button>`;
   } else if (getState('selectedPlayer')) {
     btnHtml = `<button class="pl-btn pl-btn-waiting" type="button" disabled>Waiting…</button>`;
-  } else if (!betAmount) {
-    btnHtml = `<button class="pl-btn pl-btn-locked" type="button" disabled>▶ Play</button>`;
-  } else if (!canPlay) {
-    btnHtml = `<button class="pl-btn pl-btn-locked" type="button" disabled>Low balance</button>`;
   } else {
+    // These players are only shown when they have the same bet selected — always playable
     btnHtml = `<button class="pl-btn play-btn" type="button" data-id="${player.id}" data-opponent="${formatUsername(player.username)}">▶ Play</button>`;
   }
 
@@ -138,8 +140,7 @@ function _buildPlayerRow(player) {
           <span class="pl-badge pl-badge-wins">✔ ${wins}W</span>
           <span class="pl-badge pl-badge-draws">◆ ${draws}D</span>
           <span class="pl-badge pl-badge-losses">✖ ${losses}L</span>
-          ${betAmount ? `<span class="pl-badge pl-badge-bet">Bet ${formatBalance(betAmount)} ETB</span>` : ''}
-          <span class="pl-badge ${canPlay ? 'pl-badge-available' : 'pl-badge-low'}">${canPlay ? 'Available' : 'Low balance'}</span>
+          <span class="pl-badge pl-badge-available">✓ ${betAmount} ETB</span>
         </div>
       </div>
       <span class="status-dot dot-online"></span>
