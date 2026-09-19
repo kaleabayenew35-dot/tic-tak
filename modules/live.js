@@ -124,7 +124,13 @@ export function connectLiveStream(eventHandlers = {}) {
 
   src.addEventListener('challenge_received', e => {
     const p = JSON.parse(e.data || '{}');
-    if (p?.challenge) { eventHandlers.onChallengeReceived?.(p.challenge); loadLiveChallenges(); }
+    console.log('[XO] SSE challenge_received', p);
+    if (p?.challenge) {
+      eventHandlers.onChallengeReceived?.(p.challenge);
+      loadLiveChallenges();
+    } else {
+      console.error('[XO] challenge_received event did not include a challenge', p);
+    }
   });
   src.addEventListener('challenge_sent', e => {
     const p = JSON.parse(e.data || '{}');
@@ -178,16 +184,43 @@ export function startLivePolling(eventHandlers = {}) {
 
 // ── Challenge helpers ─────────────────────────────────────────
 export async function createLiveChallenge(opponentName) {
-  const betAmount = getState('betAmount');
-  if (!betAmount || !opponentName) return null;
-  try {
-    return await apiCreateChallenge({
-      challengerUsername: getCurrentUsername(),
-      opponentUsername:   opponentName,
-      wagerAmount:        betAmount,
+  const betAmount = Number(getState('betAmount'));
+  const challengerUsername = normalizeUsername(getCurrentUsername());
+  const opponentUsername = normalizeUsername(opponentName);
+
+  if (!challengerUsername || !opponentUsername) {
+    console.error('[XO] Cannot create challenge: missing username', {
+      challengerUsername,
+      opponentUsername,
     });
+    return null;
+  }
+
+  if (!Number.isFinite(betAmount) || betAmount <= 0) {
+    console.error('[XO] Cannot create challenge: wagerAmount must be a positive number', {
+      betAmount,
+      rawBetAmount: getState('betAmount'),
+    });
+    return null;
+  }
+
+  const payload = {
+    challengerUsername,
+    opponentUsername,
+    wagerAmount: betAmount,
+  };
+
+  try {
+    console.log('[XO] POST /api/live/challenges', payload);
+    const result = await apiCreateChallenge(payload);
+    console.log('[XO] Challenge created; opponent should receive challenge_received', result);
+    return result;
   } catch (err) {
-    console.error('Could not create challenge', err);
+    console.error('[XO] Could not create challenge', {
+      error: err,
+      payload,
+      endpoint: `${API_URL}/api/live/challenges`,
+    });
     return null;
   }
 }
