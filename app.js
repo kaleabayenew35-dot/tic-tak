@@ -495,8 +495,46 @@ initLoader(() => {
           syncBoardFromMatch(match);
       },
       onMatchFinished: match => {
-        if (getState('activeMatchId') && Number(getState('activeMatchId')) === Number(match.id))
+        if (getState('activeMatchId') && Number(getState('activeMatchId')) === Number(match.id)) {
+          const me     = normalizeUsername(getCurrentUsername());
+          const isOnGameScreen = !document.getElementById('gameScreen')?.classList.contains('hidden');
+
+          // If game screen is showing and match ended without a board-filling move,
+          // it was likely a forfeit — show a brief status then reveal result.
+          const moves = (() => { try { return match.moves ? JSON.parse(match.moves) : []; } catch { return []; } })();
+          const wasForfeit = isOnGameScreen && moves.length < 9 && !moves.some(m => {
+            // Check if any winning line was completed — if not, it's a forfeit
+            const board = Array(9).fill(null);
+            moves.forEach(mv => { board[mv.index] = mv.player; });
+            const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return LINES.some(([a,b,c]) => board[a] && board[a] === board[b] && board[a] === board[c]);
+          });
+
+          // Check once if board has a winning line — re-use match result instead
+          const hasWinningLine = match.result === 'x_win' || match.result === 'o_win';
+          const isMoveWin = hasWinningLine && moves.length > 0;
+          const isForfeit = isOnGameScreen && !isMoveWin && match.status === 'finished';
+
+          if (isForfeit) {
+            const statusEl = document.getElementById('statusText');
+            const iWon = normalizeUsername(match.winner_username) === me;
+            if (statusEl) {
+              let secs = 3;
+              statusEl.textContent = iWon
+                ? `⚠️ Opponent disconnected! Awarding win in ${secs}s…`
+                : `⚠️ You disconnected — opponent wins.`;
+              if (iWon) {
+                const cd = setInterval(() => {
+                  secs--;
+                  if (secs <= 0) { clearInterval(cd); syncBoardFromMatch(match); }
+                  else statusEl.textContent = `⚠️ Opponent disconnected! Awarding win in ${secs}s…`;
+                }, 1000);
+                return;
+              }
+            }
+          }
           syncBoardFromMatch(match);
+        }
       },
       onActiveMatch: async match => {
         setState('activeMatchId', match.id);

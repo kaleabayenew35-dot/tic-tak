@@ -5,6 +5,7 @@
 import { getState, setState, gameState, clearActiveMatchId } from './state.js';
 import { getCurrentUsername, normalizeUsername, formatUsername, parseMatchMoves, getOpponentNameFromMatch } from './helpers.js';
 import { showModal, hideModal, closeSidebar, hideInviteModal } from './ui.js';
+import { refreshBalance } from './urlAuth.js';
 import {
   dashboardScreen, gameScreen, cells, statusText, turnDot,
   playerXEl, playerOEl, scoreXEl, scoreOEl, opponentNameEl,
@@ -278,11 +279,54 @@ export function showResultModalForMatch(match) {
   if (!match) return;
   const me    = normalizeUsername(getCurrentUsername());
   const isWin = normalizeUsername(match.winner_username) === me;
-  if (match.result === 'draw') { showModal('🤝', 'Draw', 'No winner this round', '±₿ 0'); return; }
-  showModal(
-    isWin ? '🏆' : '🥇',
-    isWin ? 'You Win' : 'You Lose',
-    isWin ? 'Outstanding move!' : 'Better luck next round!',
-    isWin ? `+₿ ${getState('betAmount') || 0}` : `−₿ ${getState('betAmount') || 0}`
-  );
+  const isDraw = match.result === 'draw';
+  const wager  = Number(match.wager_amount || 0);
+
+  // Calculate amounts matching xoService.settleMatch logic
+  const pot          = wager * 2;
+  const ownerFee     = Math.round(pot * 0.10 * 100) / 100;
+  const winnerPayout = Math.round((pot - ownerFee) * 100) / 100;
+  const eachFee      = Math.round(wager * 0.05 * 100) / 100;
+  const drawRefund   = Math.round((wager - eachFee) * 100) / 100;
+
+  let emoji, title, sub, outcome;
+
+  if (isDraw) {
+    emoji   = '🤝';
+    title   = "It's a Draw!";
+    sub     = 'Neck and neck — no winner this round.';
+    outcome = wager > 0 ? `Refund: +${drawRefund} ETB` : '±0 ETB';
+    // Update balance display immediately
+    if (wager > 0) {
+      const cur = Number(window.XO_BALANCE ?? 0);
+      window.XO_BALANCE = Math.max(0, cur + drawRefund);
+      const balEl = document.querySelector('.topbar-balance');
+      if (balEl) balEl.textContent = '💰 ' + Number(window.XO_BALANCE).toLocaleString() + ' ETB';
+      window.dispatchEvent(new CustomEvent('xo-balance-changed', { detail: window.XO_BALANCE }));
+    }
+  } else if (isWin) {
+    emoji   = '🏆';
+    title   = 'You Win!';
+    sub     = 'Outstanding move!';
+    outcome = wager > 0 ? `+${winnerPayout} ETB` : '+0 ETB';
+    // Update balance display immediately
+    if (wager > 0) {
+      const cur = Number(window.XO_BALANCE ?? 0);
+      window.XO_BALANCE = cur + winnerPayout;
+      const balEl = document.querySelector('.topbar-balance');
+      if (balEl) balEl.textContent = '💰 ' + Number(window.XO_BALANCE).toLocaleString() + ' ETB';
+      window.dispatchEvent(new CustomEvent('xo-balance-changed', { detail: window.XO_BALANCE }));
+    }
+  } else {
+    emoji   = '😞';
+    title   = 'You Lose';
+    sub     = 'Better luck next round!';
+    outcome = wager > 0 ? `−${wager} ETB` : '−0 ETB';
+    // Balance was already deducted at challenge accept — no change needed
+  }
+
+  showModal(emoji, title, sub, outcome);
+
+  // Confirm real balance from server after a short delay
+  setTimeout(() => refreshBalance(true), 1500);
 }
