@@ -300,6 +300,9 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .pl-badge-bet       { color:var(--gold); background:rgba(212,160,23,.1); border-color:rgba(212,160,23,.25); }
 .pl-badge-available { color:var(--green); background:rgba(76,222,128,.1); border-color:rgba(76,222,128,.25); }
 .pl-badge-low       { color:var(--red-light); background:rgba(231,76,60,.1); border-color:rgba(231,76,60,.25); }
+.pl-badge-wins      { color:var(--green); background:rgba(76,222,128,.1); border-color:rgba(76,222,128,.25); }
+.pl-badge-draws     { color:var(--gold); background:rgba(212,160,23,.1); border-color:rgba(212,160,23,.25); }
+.pl-badge-losses    { color:var(--red-light); background:rgba(231,76,60,.1); border-color:rgba(231,76,60,.25); }
 .status-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 .dot-online  { background:var(--green); box-shadow:0 0 5px var(--green); }
 .dot-offline { background:var(--text-muted); }

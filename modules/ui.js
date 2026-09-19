@@ -57,7 +57,7 @@ export function renderPlayers({ onSelectPlayer, onCancelSelection } = {}) {
 
   const visible = allPlayers
     .filter(p => normalizeUsername(p.username) !== me)
-    .sort((a, b) => Number(b.balance || 0) - Number(a.balance || 0));
+    .sort((a, b) => Number(b.wins || 0) - Number(a.wins || 0));
 
   const matching = betAmount
     ? visible.filter(p => {
@@ -112,6 +112,10 @@ function _buildPlayerRow(player) {
   const initials    = (player.username || 'P').replace(/^@/, '').slice(0, 2).toUpperCase();
   const colorClass  = ['p1', 'p2', 'p3', 'p4'][Number(player.id) % 4];
 
+  const wins   = Number(player.wins   ?? 0);
+  const losses = Number(player.losses ?? 0);
+  const draws  = Number(player.draws  ?? 0);
+
   let btnHtml;
   if (isSelected) {
     btnHtml = `<button class="pl-btn pl-btn-cancel" type="button" data-id="${player.id}">✕ Cancel</button>`;
@@ -131,7 +135,10 @@ function _buildPlayerRow(player) {
       <div class="pl-info">
         <span class="pl-username">${formatUsername(player.username)}</span>
         <div class="pl-badges">
-          <span class="pl-badge pl-badge-bet">${betAmount ? `Bet ${formatBalance(betAmount)} ETB` : `Balance ${formatBalance(available)} ETB`}</span>
+          <span class="pl-badge pl-badge-wins">✔ ${wins}W</span>
+          <span class="pl-badge pl-badge-draws">◆ ${draws}D</span>
+          <span class="pl-badge pl-badge-losses">✖ ${losses}L</span>
+          ${betAmount ? `<span class="pl-badge pl-badge-bet">Bet ${formatBalance(betAmount)} ETB</span>` : ''}
           <span class="pl-badge ${canPlay ? 'pl-badge-available' : 'pl-badge-low'}">${canPlay ? 'Available' : 'Low balance'}</span>
         </div>
       </div>
