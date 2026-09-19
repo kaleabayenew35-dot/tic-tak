@@ -34,10 +34,20 @@ export async function registerOnlineUser() {
 export async function loadPlayers(callbacks = {}) {
   const betAmount = getState('betAmount');
   try {
-    const data = await fetchPlayers(betAmount);
-    setState('onlinePlayers',
-      Array.isArray(data) ? data.filter(p => (p.status || 'online') !== 'offline') : []
+    // Always fetch all online players for the count display
+    const allData = await fetchPlayers();
+    setState('allOnlinePlayers',
+      Array.isArray(allData) ? allData.filter(p => (p.status || 'online') !== 'offline') : []
     );
+
+    // When a bet is selected, fetch only players with that bet (server-filtered)
+    let betPlayers = [];
+    if (betAmount && Number(betAmount) > 0) {
+      const betData = await fetchPlayers(betAmount);
+      betPlayers = Array.isArray(betData) ? betData.filter(p => (p.status || 'online') !== 'offline') : [];
+    }
+
+    setState('onlinePlayers', betAmount ? betPlayers : []);
     renderPlayers({ onSelectPlayer: callbacks.onSelectPlayer, onCancelSelection: callbacks.onCancelSelection });
     updateOnlineCount();
   } catch (err) {

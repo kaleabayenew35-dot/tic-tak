@@ -41,8 +41,10 @@ export function updateConnectionStatus() {
 // ── Online count ──────────────────────────────────────────────
 export function updateOnlineCount() {
   if (!onlineCount) return;
-  const me      = normalizeUsername(getCurrentUsername());
-  const visible = getState('onlinePlayers').filter(p => normalizeUsername(p.username) !== me).length;
+  const me = normalizeUsername(getCurrentUsername());
+  // Count all known online players excluding self, regardless of bet filter
+  const allOnline = getState('allOnlinePlayers') || getState('onlinePlayers');
+  const visible = allOnline.filter(p => normalizeUsername(p.username) !== me).length;
   onlineCount.textContent = `${visible} online`;
 }
 
